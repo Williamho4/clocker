@@ -1,40 +1,31 @@
-'use client'
-
-import { ChevronLeft, ChevronRight, Trash2, User } from 'lucide-react'
-import { Button } from './ui/button'
+import { User } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import AddShiftBtn from './add-shift-btn'
-import {
-  addDays,
-  addWeeks,
-  format,
-  isSameDay,
-  startOfDay,
-  startOfWeek,
-  subWeeks,
-} from 'date-fns'
-import { Dispatch, SetStateAction, useEffect, useState } from 'react'
+import { addDays, format, isSameDay, startOfDay, startOfWeek } from 'date-fns'
 import { ScheduleAndShifts, Weekday } from '@/lib/types'
 import {
   cn,
   countTotalHoursForDay,
   countTotalWorkersForDay,
-  formatToLocalTime,
+  weekToDates,
 } from '@/lib/utils'
 import Shift from './shift'
-import { authClient } from '@/lib/auth-client'
-import { ActiveOrganization } from '@/lib/auth-types'
 
-export default function ScheduleMaker() {
-  const [selectedDate, setSelectedDate] = useState(new Date())
-  const [schedules, setSchedules] = useState<ScheduleAndShifts[] | []>([])
-  const [reRender, setReRender] = useState(false)
+type ScheduleMakerProps = {
+  schedules: ScheduleAndShifts[]
+  week: number
+  year: number
+  orgId: string
+}
 
-  const { data: activeOrganization, isPending: orgLoading } =
-    authClient.useActiveOrganization()
-  const { data: session, isPending: sessionLoading } = authClient.useSession()
-
-  const weekStart = startOfWeek(selectedDate, { weekStartsOn: 1 })
+export default async function ScheduleMaker({
+  schedules,
+  week,
+  year,
+  orgId,
+}: ScheduleMakerProps) {
+  const selectedDate = await weekToDates(week, year)
+  const weekStart = startOfWeek(selectedDate[0], { weekStartsOn: 1 })
   const todaysDate = startOfDay(new Date())
 
   const weekDays = Array.from({ length: 7 }, (_, i) => {
@@ -47,133 +38,44 @@ export default function ScheduleMaker() {
     }
   })
 
-  useEffect(() => {
-    const fetchSchedules = async () => {
-      const res = await fetch(
-        `/api/schedules/?start=${weekStart.toISOString()}&end=${weekDays[6].date.toISOString()}&orgId=${
-          activeOrganization?.id
-        }`
-      )
-      const data = await res.json()
-
-      setSchedules(data)
-    }
-
-    fetchSchedules()
-  }, [selectedDate, activeOrganization?.id, reRender])
-
-  const goToPreviousWeek = () => {
-    setSelectedDate((prev) => subWeeks(prev, 1))
-  }
-
-  const goToNextWeek = () => {
-    setSelectedDate((prev) => addWeeks(prev, 1))
-  }
-
   return (
     <>
-      {orgLoading && sessionLoading ? (
-        <p>Loading</p>
-      ) : (
-        <section className="space-y-5">
-          <ScheduleMakerHeader
-            setSelectedDate={setSelectedDate}
-            weekStart={weekStart}
-            goToNextWeek={goToNextWeek}
-            goToPreviousWeek={goToPreviousWeek}
-          />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 gap-3">
-            {weekDays.map((day) => {
-              const schedulesForDay: ScheduleAndShifts | undefined =
-                schedules.find((schedule) => isSameDay(schedule.date, day.date))
+      <section className="space-y-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 gap-3">
+          {weekDays.map((day) => {
+            const schedulesForDay: ScheduleAndShifts | undefined =
+              schedules.find((schedule) => isSameDay(schedule.date, day.date))
 
-              return (
-                <Card
-                  key={day.iso}
-                  className={cn('min-h-50 lg:min-h-140 shadow-sm', {
-                    'ring-2 ring-blue-400':
-                      todaysDate.getTime() === day.date.getTime(),
-                  })}
-                >
-                  <CardHeader>
-                    <CardTitle>
-                      <ShiftStats
-                        schedulesForDay={
-                          schedulesForDay ? schedulesForDay : null
-                        }
-                        day={day}
-                        todaysDate={todaysDate}
-                      />
-                    </CardTitle>
-                    <AddShiftBtn
-                      activeOrganization={
-                        activeOrganization as ActiveOrganization
-                      }
-                      setReRender={setReRender}
-                      session={session}
-                      selectedDay={day.date}
+            return (
+              <Card
+                key={day.iso}
+                className={cn('min-h-50 lg:min-h-140 shadow-sm', {
+                  'ring-2 ring-blue-400':
+                    todaysDate.getTime() === day.date.getTime(),
+                })}
+              >
+                <CardHeader>
+                  <CardTitle>
+                    <ShiftStats
+                      schedulesForDay={schedulesForDay ? schedulesForDay : null}
+                      day={day}
+                      todaysDate={todaysDate}
                     />
-                  </CardHeader>
-                  <CardContent className="flex flex-col">
-                    {schedulesForDay &&
-                      schedulesForDay.shifts.map((shift) => (
-                        <Shift
-                          setReRender={setReRender}
-                          key={shift.id}
-                          shiftData={shift}
-                        />
-                      ))}
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </div>
-        </section>
-      )}
+                  </CardTitle>
+                  <AddShiftBtn orgId={orgId} selectedDay={day.date} />
+                </CardHeader>
+                <CardContent className="flex flex-col">
+                  {schedulesForDay &&
+                    schedulesForDay.shifts.map((shift) => (
+                      <Shift key={shift.id} shiftData={shift} />
+                    ))}
+                </CardContent>
+              </Card>
+            )
+          })}
+        </div>
+      </section>
     </>
-  )
-}
-
-type ScheduleMakerHeaderProps = {
-  setSelectedDate: Dispatch<SetStateAction<Date>>
-  weekStart: Date
-  goToPreviousWeek: () => void
-  goToNextWeek: () => void
-}
-
-const ScheduleMakerHeader = ({
-  setSelectedDate,
-  weekStart,
-  goToPreviousWeek,
-  goToNextWeek,
-}: ScheduleMakerHeaderProps) => {
-  return (
-    <CardHeader className="bg-white rounded-xl p-4">
-      <div className="flex flex-col gap-5 lg:flex-row lg:justify-between lg:items-center">
-        <div>
-          <CardTitle className="text-xl">
-            <span>
-              {format(weekStart, 'MMMM d')} –{' '}
-              {format(addWeeks(weekStart, 1), 'MMMM d')}
-            </span>
-          </CardTitle>
-          <p className="text-sm text-gray-600 mt-1">
-            10 shifts scheduled • 8 employees
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button onClick={goToPreviousWeek}>
-            <ChevronLeft className="h-4 w-4" />
-            Previous
-          </Button>
-          <Button onClick={() => setSelectedDate(new Date())}>This Week</Button>
-          <Button onClick={goToNextWeek}>
-            Next
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-    </CardHeader>
   )
 }
 

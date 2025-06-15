@@ -1,3 +1,5 @@
+'use client'
+
 import { Plus } from 'lucide-react'
 import ShiftForm from './shift-form'
 import { Button } from './ui/button'
@@ -9,22 +11,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from './ui/dialog'
-import { Dispatch, SetStateAction, useState } from 'react'
-import { ActiveOrganization, Session } from '@/lib/auth-types'
+import { useState } from 'react'
 
 type AddShiftBtnProps = {
   selectedDay: Date
-  activeOrganization: ActiveOrganization | null
-  session: Session | null
-  setReRender: Dispatch<SetStateAction<boolean>>
+  orgId: string
 }
 
-export default function AddShiftBtn({
-  selectedDay,
-  activeOrganization,
-  session,
-  setReRender,
-}: AddShiftBtnProps) {
+export default function AddShiftBtn({ selectedDay, orgId }: AddShiftBtnProps) {
   const [isFormOpen, setIsFormOpen] = useState(false)
 
   return (
@@ -42,9 +36,7 @@ export default function AddShiftBtn({
             Schedule a shift for an employee. All fields are required.
           </DialogDescription>
           <ShiftForm
-            setReRender={setReRender}
-            activeOrganization={activeOrganization}
-            session={session}
+            orgId={orgId}
             selectedDay={selectedDay}
             setIsFormOpen={setIsFormOpen}
           />

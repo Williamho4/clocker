@@ -2,8 +2,17 @@
 
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/db'
+import { weekToDates } from '@/lib/utils'
 import { Organization, User } from '@prisma/client'
-import { addDays, startOfDay, startOfWeek } from 'date-fns'
+import {
+  addDays,
+  endOfISOWeek,
+  setISOWeek,
+  startOfDay,
+  startOfISOWeek,
+  startOfWeek,
+} from 'date-fns'
+import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
 
 export const createShift = async (
@@ -81,6 +90,8 @@ export const createShift = async (
         },
       },
     })
+
+    revalidatePath(`/app/${organizationId}/scheduler`)
   } catch (error) {
     console.log(error)
   }
@@ -88,6 +99,10 @@ export const createShift = async (
 
 export const deleteShift = async (shiftId: string) => {
   const activeMember = await auth.api.getActiveMember({
+    headers: await headers(),
+  })
+
+  const organization = await auth.api.getFullOrganization({
     headers: await headers(),
   })
 
@@ -108,6 +123,8 @@ export const deleteShift = async (shiftId: string) => {
       message: 'Could not delete shift',
     }
   }
+
+  revalidatePath(`/app/${organization?.id}/scheduler`)
 }
 
 export const getSchedulesForWeek = async (
@@ -122,6 +139,38 @@ export const getSchedulesForWeek = async (
         lte: endTime,
       },
       organizationId,
+    },
+    include: {
+      shifts: {
+        include: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+      },
+    },
+  })
+
+  return schedules
+}
+
+export const getSchedulesForWeek2 = async (
+  week: number,
+  year: number,
+  orgId: string
+) => {
+  const dates = await weekToDates(week, year)
+
+  const schedules = await prisma.schedule.findMany({
+    where: {
+      date: {
+        gte: dates[0],
+        lte: dates[1],
+      },
+      organizationId: orgId,
     },
     include: {
       shifts: {

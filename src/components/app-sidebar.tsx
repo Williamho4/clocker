@@ -26,9 +26,13 @@ import { useState } from 'react'
 import { authClient } from '@/lib/auth-client'
 import { useRouter } from 'next/navigation'
 import { NavUser } from './nav-user'
+import { getISOWeek, getISOWeekYear } from 'date-fns'
 
 export function AppSidebar() {
   const { data: activeOrganization } = authClient.useActiveOrganization()
+  const currentDate = new Date()
+  const weekNumber = getISOWeek(currentDate)
+  const year = getISOWeekYear(currentDate)
 
   const items = [
     {
@@ -53,7 +57,7 @@ export function AppSidebar() {
 
       {
         title: 'Scheduler',
-        url: `/app/${activeOrganization?.id}/scheduler`,
+        url: `/app/${activeOrganization?.id}/scheduler?week=${weekNumber}&year=${year}`,
         icon: Calendar,
       },
       {

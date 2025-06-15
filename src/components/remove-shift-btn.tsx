@@ -1,3 +1,5 @@
+'use client'
+
 import { Trash2 } from 'lucide-react'
 import { Button } from './ui/button'
 import { deleteShift } from '@/actions/schedule-actions'
@@ -7,13 +9,9 @@ import { Dispatch, SetStateAction } from 'react'
 
 type RemoveShiftBtnProps = {
   shiftData: ShiftAndNames
-  setReRender: Dispatch<SetStateAction<boolean>>
 }
 
-export default function RemoveShiftBtn({
-  shiftData,
-  setReRender,
-}: RemoveShiftBtnProps) {
+export default function RemoveShiftBtn({ shiftData }: RemoveShiftBtnProps) {
   const handleDeleteShift = async () => {
     const error = await deleteShift(shiftData.id)
 
@@ -22,7 +20,6 @@ export default function RemoveShiftBtn({
     }
 
     toast.success(`${shiftData.user.firstName}'s Shift deleted`)
-    setReRender((prev) => !prev)
   }
 
   return (

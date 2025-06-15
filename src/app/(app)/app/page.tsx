@@ -18,7 +18,6 @@ export default async function Page() {
     <main>
       {user.role === 'ADMIN' && <p>Admin</p>}
       Welcome
-      <InviteList session={session} />
       <SignOutBtn />
       <CreateOrgForm />
     </main>

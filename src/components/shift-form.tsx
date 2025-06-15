@@ -12,25 +12,24 @@ import { combineDateAndTime } from '@/lib/utils'
 import { createShift } from '@/actions/schedule-actions'
 import { redirect } from 'next/navigation'
 import { Dispatch, SetStateAction } from 'react'
-import { ActiveOrganization, Session } from '@/lib/auth-types'
 import { toast } from 'sonner'
+import { authClient } from '@/lib/auth-client'
 
 type ShiftFormProps = {
   selectedDay: Date
   setIsFormOpen: Dispatch<SetStateAction<boolean>>
-  activeOrganization: ActiveOrganization
-  session: Session | null
-  setReRender: Dispatch<SetStateAction<boolean>>
+  orgId: string
 }
 
 export default function ShiftForm({
   selectedDay,
   setIsFormOpen,
-  activeOrganization,
-  setReRender,
+  orgId,
 }: ShiftFormProps) {
-  if (!activeOrganization) {
-    redirect('/')
+  const { data: organization } = authClient.useActiveOrganization()
+
+  if (!organization) {
+    redirect('/app')
   }
 
   const handleFormSubmit = async (formData: FormData) => {
@@ -45,7 +44,7 @@ export default function ShiftForm({
       formattedStartTime,
       formattedEndTime,
       employeeId,
-      activeOrganization?.id
+      orgId
     )
 
     if (error) {
@@ -55,7 +54,6 @@ export default function ShiftForm({
 
     toast.success('Shift Created')
     setIsFormOpen(false)
-    setReRender((prev) => !prev)
   }
 
   return (
@@ -67,7 +65,7 @@ export default function ShiftForm({
             <SelectValue placeholder="Employee" />
           </SelectTrigger>
           <SelectContent>
-            {activeOrganization.members.map((member) => (
+            {organization.members.map((member) => (
               <SelectItem key={member.id} value={member.userId}>
                 <p className="capitalize">{member.user.name}</p>
               </SelectItem>

@@ -1,5 +1,11 @@
 import { clsx, type ClassValue } from 'clsx'
-import { format, intervalToDuration } from 'date-fns'
+import {
+  endOfISOWeek,
+  format,
+  intervalToDuration,
+  setISOWeek,
+  startOfISOWeek,
+} from 'date-fns'
 import { toZonedTime } from 'date-fns-tz'
 import { twMerge } from 'tailwind-merge'
 import { ScheduleAndShifts } from './types'
@@ -86,4 +92,15 @@ export const countTotalWorkersForDay = (schedule: ScheduleAndShifts) => {
   })
 
   return employees
+}
+
+export const weekToDates = async (week: number, year: number) => {
+  let janFirst = new Date(year, 0, 4)
+
+  const dateInWeek = setISOWeek(janFirst, week)
+
+  const startDate = startOfISOWeek(dateInWeek)
+  const endDate = endOfISOWeek(dateInWeek)
+
+  return [startDate, endDate]
 }

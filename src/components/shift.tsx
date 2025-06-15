@@ -5,10 +5,9 @@ import { Dispatch, SetStateAction } from 'react'
 
 type ShiftProps = {
   shiftData: ShiftAndNames
-  setReRender: Dispatch<SetStateAction<boolean>>
 }
 
-export default function Shift({ shiftData, setReRender }: ShiftProps) {
+export default function Shift({ shiftData }: ShiftProps) {
   return (
     <div className="flex items-center gap-3 relative group">
       <div className={`w-1.5 h-1.5 rounded-full bg-red-600`}></div>
@@ -21,7 +20,7 @@ export default function Shift({ shiftData, setReRender }: ShiftProps) {
           {format(shiftData.endTime, 'HH:mm')}
         </div>
       </div>
-      <RemoveShiftBtn setReRender={setReRender} shiftData={shiftData} />
+      <RemoveShiftBtn shiftData={shiftData} />
     </div>
   )
 }
