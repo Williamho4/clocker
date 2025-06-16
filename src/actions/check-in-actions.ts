@@ -22,9 +22,13 @@ export const getAllActiveAttendances = async (organizationId: string) => {
             user: true,
           },
         },
+        breaks: {
+          where: {
+            status: 'PENDING',
+          },
+        },
       },
     })
-    console.log(attendances)
 
     return attendances
   } catch (error) {
@@ -44,18 +48,13 @@ export const checkOutEmployee = async (attendanceId: string, orgId: string) => {
         checkOutTime: new Date(),
       },
     })
+    revalidatePath(`/app/${orgId}/check-in`)
   } catch (error) {
     return { message: 'Could not check out' }
   }
-
-  revalidatePath(`/app/${orgId}/check-in`)
 }
 
-export const checkInEmployee = async (
-  orgId: string,
-  userId: string,
-  memberId: string
-) => {
+export const checkInEmployee = async (orgId: string, memberId: string) => {
   const activeMember = await auth.api.getActiveMember({
     headers: await headers(),
   })
@@ -83,11 +82,10 @@ export const checkInEmployee = async (
         },
       },
     })
+    revalidatePath(`/app/${orgId}/check-in`)
   } catch (error) {
     return { message: 'Could not check in' }
   }
-
-  revalidatePath(`/app/${orgId}/check-in`)
 }
 
 export const searchOrgMember = async (orgId: string, employeeName: string) => {
@@ -120,5 +118,50 @@ export const searchOrgMember = async (orgId: string, employeeName: string) => {
   } catch (error) {
     console.error('Failed to search members:', error)
     return []
+  }
+}
+
+export const startBreak = async (attendanceId: string, orgId: string) => {
+  const alreadyOnBreak = await prisma.break.findFirst({
+    where: {
+      attendanceId,
+    },
+  })
+
+  if (alreadyOnBreak) {
+    return { message: 'Already on break' }
+  }
+
+  try {
+    await prisma.break.create({
+      data: {
+        startTime: new Date(),
+        attendance: {
+          connect: { id: attendanceId },
+        },
+        status: 'PENDING',
+      },
+    })
+
+    revalidatePath(`/app/${orgId}/check-in`)
+  } catch (error) {
+    return { message: 'Could not start break' }
+  }
+}
+
+export const stopBreak = async (breakId: string, orgId: string) => {
+  try {
+    await prisma.break.update({
+      where: {
+        id: breakId,
+      },
+      data: {
+        endTime: new Date(),
+        status: 'DONE',
+      },
+    })
+    revalidatePath(`/app/${orgId}/check-in`)
+  } catch (error) {
+    return { message: 'Could not stop break' }
   }
 }

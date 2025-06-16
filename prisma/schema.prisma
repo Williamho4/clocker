@@ -28,6 +28,11 @@ enum ShiftStatus {
   MISSED
 }
 
+enum BreakStatus {
+  PENDING
+  DONE
+}
+
 model User {
   id            String       @id
   name          String
@@ -170,10 +175,11 @@ model Attendance {
 }
 
 model Break {
-  id           String     @id @default(cuid())
+  id           String      @id @default(cuid())
   startTime    DateTime
-  endTime      DateTime
-  attendance   Attendance @relation(fields: [attendanceId], references: [id])
+  endTime      DateTime?
+  status       BreakStatus
+  attendance   Attendance  @relation(fields: [attendanceId], references: [id])
   attendanceId String
 
   createdAt DateTime @default(now())

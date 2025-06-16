@@ -11,11 +11,14 @@ import {
 } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import CheckInSearch from '@/components/check-in-search'
-import { Attendance, Member, Shift, User } from '@prisma/client'
-import { format } from 'date-fns'
+import { Attendance, Break, Member, Shift, User } from '@prisma/client'
+import { differenceInMinutes, format } from 'date-fns'
 import CheckOutBtn from '@/components/check-out-btn'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { getAllActiveAttendances } from '@/actions/check-in-actions'
+import GoOnBreakBtn from '@/components/start-break-btn'
+import StartBreakBtn from '@/components/start-break-btn'
+import StopBreakBtn from '@/components/stop-break-button'
 
 type PageProps = {
   params: {
@@ -35,7 +38,7 @@ export default async function Page({ params }: PageProps) {
       <CheckInSearch orgId={orgId} />
       <div className="grid gap-6 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
         {attendances.map((attendance) => (
-          <CheckInCard
+          <AttendanceCard
             key={attendance.id}
             attendance={attendance}
             orgId={orgId}
@@ -52,6 +55,7 @@ type MemberAndUser = Member & {
 
 type AttendanceWithMemberAndUser = Attendance & {
   member: MemberAndUser
+  breaks: Break[]
 }
 
 type CheckInCardProps = {
@@ -59,8 +63,13 @@ type CheckInCardProps = {
   orgId: string
 }
 
-function CheckInCard({ attendance, orgId }: CheckInCardProps) {
+function AttendanceCard({ attendance, orgId }: CheckInCardProps) {
   const { user } = attendance.member
+
+  const totalMinutes = differenceInMinutes(new Date(), attendance.checkInTime!)
+
+  const hours = Math.floor(totalMinutes / 60)
+  const minutes = totalMinutes % 60
 
   return (
     <Card>
@@ -82,9 +91,18 @@ function CheckInCard({ attendance, orgId }: CheckInCardProps) {
           </div>
         </div>
         <CardAction>
-          <Badge variant="default" className="bg-green-100 text-green-800">
-            Active
-          </Badge>
+          {attendance.breaks.length === 0 ? (
+            <Badge variant="default" className="bg-green-100 text-green-800">
+              Active
+            </Badge>
+          ) : (
+            <Badge
+              variant="secondary"
+              className="bg-yellow-100 text-yellow-800"
+            >
+              On Break
+            </Badge>
+          )}
         </CardAction>
       </CardHeader>
       <CardContent className="flex justify-between w-[60%] sm:w-[50%] md:w-[60%]">
@@ -95,12 +113,22 @@ function CheckInCard({ attendance, orgId }: CheckInCardProps) {
           </p>
         </div>
         <div>
-          <p>Hours Worked</p>
-          <p className="font-bold">6h 30m</p>
+          <p>Time Worked</p>
+          <p className="font-bold">{`${hours}h ${minutes}m`}</p>
         </div>
       </CardContent>
       <CardFooter className="w-full flex justify-between">
-        <Button className="w-[48%]">Go On Break</Button>
+        {attendance.breaks.length === 0 ? (
+          <StartBreakBtn
+            attendanceId={attendance.id}
+            orgId={attendance.organizationId}
+          />
+        ) : (
+          <StopBreakBtn
+            breakId={attendance.breaks[0].id}
+            orgId={attendance.organizationId}
+          />
+        )}
         <CheckOutBtn attendanceId={attendance.id} orgId={orgId} />
       </CardFooter>
     </Card>
