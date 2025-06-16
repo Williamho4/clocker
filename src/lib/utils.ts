@@ -30,41 +30,14 @@ export function combineDateAndTime(date: Date, time: string): Date {
   return combined
 }
 
-export function formatToLocalTime(schedules: ScheduleAndShifts[]) {
-  const formattedSchedules = schedules.map((schedule) => {
-    const localDate = toZonedTime(schedule.date, 'Europe/Paris')
-
-    if (schedule.shifts) {
-      const localShifts = schedule.shifts.map((shift) => ({
-        ...shift,
-        startTime: toZonedTime(shift.startTime, 'Europe/Paris'),
-        endTime: toZonedTime(shift.endTime, 'Europe/Paris'),
-      }))
-
-      return {
-        ...schedule,
-        date: localDate,
-        shifts: localShifts,
-      }
-    }
-
-    return {
-      ...schedule,
-      date: localDate,
-    }
-  })
-
-  return formattedSchedules
-}
-
 export const countTotalHoursForDay = (schedule: ScheduleAndShifts) => {
   let totalHours = 0
   let totalMinutes = 0
 
   schedule.shifts.forEach((shift) => {
     const duration = intervalToDuration({
-      start: new Date(shift.startTime),
-      end: new Date(shift.endTime),
+      start: new Date(shift.startTime!),
+      end: new Date(shift.endTime!),
     })
 
     totalHours += duration.hours || 0

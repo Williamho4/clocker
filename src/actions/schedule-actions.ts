@@ -6,18 +6,21 @@ import { weekToDates } from '@/lib/utils'
 import { Organization, User } from '@prisma/client'
 import {
   addDays,
+  endOfDay,
   endOfISOWeek,
+  isLeapYear,
   setISOWeek,
   startOfDay,
   startOfISOWeek,
   startOfWeek,
+  startOfYear,
 } from 'date-fns'
 import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
 
 export const createShift = async (
-  startDate: Date,
-  endDate: Date,
+  shiftStartDate: Date,
+  shiftEndDate: Date,
   employeeId: User['id'],
   organizationId: Organization['id']
 ) => {
@@ -31,24 +34,26 @@ export const createShift = async (
     }
   }
 
-  const weekStart = startOfWeek(startDate, { weekStartsOn: 1 })
-  const weekDays = Array.from({ length: 7 }, (_, i) => {
-    const date = addDays(weekStart, i)
-    return date
-  })
-
-  const existingSchedule = await prisma.schedule.findUnique({
+  const checkIfSchedulesAlreadyCreated = await prisma.schedule.findFirst({
     where: {
-      date_organizationId: {
-        date: weekDays[0],
-        organizationId,
+      date: {
+        gte: startOfDay(shiftStartDate),
+        lte: endOfDay(shiftEndDate),
       },
+      organizationId,
     },
   })
 
-  if (!existingSchedule) {
+  if (!checkIfSchedulesAlreadyCreated) {
+    const yearStartDate = startOfYear(shiftStartDate)
+    const daysInYear = isLeapYear(yearStartDate) ? 366 : 365
+
+    const allDays = Array.from({ length: daysInYear }, (_, i) =>
+      addDays(yearStartDate, i)
+    )
+
     await Promise.all(
-      weekDays.map((date) =>
+      allDays.map((date) =>
         prisma.schedule.create({
           data: {
             date,
@@ -57,12 +62,14 @@ export const createShift = async (
         })
       )
     )
+
+    console.log('Year schedule created')
   }
 
   const schedule = await prisma.schedule.findUnique({
     where: {
       date_organizationId: {
-        date: startOfDay(startDate),
+        date: startOfDay(shiftStartDate),
         organizationId,
       },
     },
@@ -73,15 +80,14 @@ export const createShift = async (
 
   if (!schedule) throw new Error('Schedule not found')
 
-  if (startDate > endDate) {
-    endDate = addDays(endDate, 1)
-  }
+  const fixedEndDate =
+    shiftStartDate > shiftEndDate ? addDays(shiftEndDate, 1) : shiftEndDate
 
   try {
     await prisma.shift.create({
       data: {
-        startTime: startDate,
-        endTime: endDate,
+        startTime: shiftStartDate,
+        endTime: fixedEndDate,
         user: {
           connect: { id: employeeId },
         },
@@ -128,36 +134,6 @@ export const deleteShift = async (shiftId: string) => {
 }
 
 export const getSchedulesForWeek = async (
-  startTime: Date,
-  endTime: Date,
-  organizationId: Organization['id']
-) => {
-  const schedules = await prisma.schedule.findMany({
-    where: {
-      date: {
-        gte: startTime,
-        lte: endTime,
-      },
-      organizationId,
-    },
-    include: {
-      shifts: {
-        include: {
-          user: {
-            select: {
-              firstName: true,
-              lastName: true,
-            },
-          },
-        },
-      },
-    },
-  })
-
-  return schedules
-}
-
-export const getSchedulesForWeek2 = async (
   week: number,
   year: number,
   orgId: string
@@ -174,6 +150,7 @@ export const getSchedulesForWeek2 = async (
     },
     include: {
       shifts: {
+        orderBy: [{ startTime: 'asc' }, { endTime: 'asc' }],
         include: {
           user: {
             select: {

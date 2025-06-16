@@ -1,5 +1,5 @@
-import { getSchedulesForWeek2 } from '@/actions/schedule-actions'
-import ScheduleMaker from '@/components/schedule-maker'
+import { getSchedulesForWeek } from '@/actions/schedule-actions'
+import Schedule from '@/components/schedule'
 import { Button } from '@/components/ui/button'
 import { CardHeader, CardTitle } from '@/components/ui/card'
 import { getISOWeek, getISOWeeksInYear, getISOWeekYear } from 'date-fns'
@@ -22,7 +22,7 @@ export default async function Page({ params, searchParams }: PageProps) {
   week = Number(week)
   year = Number(year)
 
-  const schedules = await getSchedulesForWeek2(week, year, orgId)
+  const schedules = await getSchedulesForWeek(week, year, orgId)
 
   const currentDate = new Date()
   const currentWeek = getISOWeek(currentDate)
@@ -81,12 +81,7 @@ export default async function Page({ params, searchParams }: PageProps) {
           </div>
         </div>
       </CardHeader>
-      <ScheduleMaker
-        schedules={schedules}
-        week={week}
-        year={year}
-        orgId={orgId}
-      />
+      <Schedule schedules={schedules} week={week} year={year} orgId={orgId} />
     </main>
   )
 }

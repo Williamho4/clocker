@@ -15,10 +15,12 @@ export default function Shift({ shiftData }: ShiftProps) {
         <div className="text-sm font-medium text-gray-800 truncate max-w-[80px] capitalize">
           {shiftData.user.firstName} {''} {shiftData.user.lastName}
         </div>
-        <div className="text-xs text-gray-500 mt-0.5 ">
-          {format(shiftData.startTime, 'HH:mm')} -{' '}
-          {format(shiftData.endTime, 'HH:mm')}
-        </div>
+        {shiftData.startTime && shiftData.endTime && (
+          <div className="text-xs text-gray-500 mt-0.5 ">
+            {format(shiftData.startTime, 'HH:mm')} -{' '}
+            {format(shiftData.endTime, 'HH:mm')}
+          </div>
+        )}
       </div>
       <RemoveShiftBtn shiftData={shiftData} />
     </div>

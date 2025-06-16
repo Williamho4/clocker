@@ -18,7 +18,7 @@ type ScheduleMakerProps = {
   orgId: string
 }
 
-export default async function ScheduleMaker({
+export default async function Schedule({
   schedules,
   week,
   year,
@@ -41,9 +41,9 @@ export default async function ScheduleMaker({
   return (
     <>
       <section className="space-y-5">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 gap-3">
+        <div className="grid grid-cols-1 s:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 gap-3">
           {weekDays.map((day) => {
-            const schedulesForDay: ScheduleAndShifts | undefined =
+            const scheduleForDay: ScheduleAndShifts | undefined =
               schedules.find((schedule) => isSameDay(schedule.date, day.date))
 
             return (
@@ -57,7 +57,7 @@ export default async function ScheduleMaker({
                 <CardHeader>
                   <CardTitle>
                     <ShiftStats
-                      schedulesForDay={schedulesForDay ? schedulesForDay : null}
+                      schedulesForDay={scheduleForDay ? scheduleForDay : null}
                       day={day}
                       todaysDate={todaysDate}
                     />
@@ -65,10 +65,12 @@ export default async function ScheduleMaker({
                   <AddShiftBtn orgId={orgId} selectedDay={day.date} />
                 </CardHeader>
                 <CardContent className="flex flex-col">
-                  {schedulesForDay &&
-                    schedulesForDay.shifts.map((shift) => (
-                      <Shift key={shift.id} shiftData={shift} />
-                    ))}
+                  {scheduleForDay &&
+                    scheduleForDay.shifts
+                      .filter((shift) => shift.startTime !== null)
+                      .map((shift) => (
+                        <Shift key={shift.id} shiftData={shift} />
+                      ))}
                 </CardContent>
               </Card>
             )
