@@ -16,8 +16,8 @@ type PageProps = {
   }
 }
 export default async function Page({ params, searchParams }: PageProps) {
-  const { orgId } = params
-  let { week, year } = searchParams
+  const { orgId } = await params
+  let { week, year } = await searchParams
 
   week = Number(week)
   year = Number(year)

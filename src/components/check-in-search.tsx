@@ -100,7 +100,6 @@ export default function CheckInSearch({ orgId }: CheckInSearchProps) {
             <CheckInBtn
               resetSearch={resetSearch}
               orgId={orgId}
-              userId={selectedEmployee.user.id}
               memberId={selectedEmployee.id}
             />
           </>

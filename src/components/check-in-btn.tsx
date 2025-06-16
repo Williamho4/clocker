@@ -6,24 +6,21 @@ import { format } from 'date-fns'
 type CheckInBtnProps = {
   orgId: string
   memberId: string
-  userId: string
   resetSearch: () => void
 }
 
 export default function CheckInBtn({
   orgId,
   memberId,
-  userId,
   resetSearch,
 }: CheckInBtnProps) {
   const handleCheckIn = async ({}) => {
     const checkInTime = format(new Date(), 'HH:mm')
-    const error = await checkInEmployee(orgId, userId, memberId)
+    const error = await checkInEmployee(orgId, memberId)
 
     if (error) {
       toast.error(error.message)
 
-      console.log(error)
       return
     }
 
