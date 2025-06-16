@@ -52,7 +52,7 @@ export default function AttendanceCard({
             <AvatarFallback className="rounded-lg">CN</AvatarFallback>
           </Avatar>
           <div className="space-y-1">
-            <CardTitle>{user.name}</CardTitle>
+            <CardTitle className="capitalize">{user.name}</CardTitle>
             {attendance.shift && (
               <CardDescription>
                 {format(attendance.shift.startTime, 'HH:mm')} -{' '}
@@ -73,14 +73,14 @@ export default function AttendanceCard({
           )}
         </CardAction>
       </CardHeader>
-      <CardContent className="flex justify-between w-[70%] sm:w-[50%] md:w-[60%]">
-        <div>
+      <CardContent className="flex flex-col gap-2 justify-between w-[70%] sm:w-[50%] md:w-[60%]">
+        <div className="flex gap-2">
           <p>Check-In Time</p>
           <p className="font-bold">
             {format(attendance.checkInTime!, 'HH:mm')}
           </p>
         </div>
-        <div>
+        <div className="flex gap-2">
           <p>Time Worked</p>
           <p className="font-bold">{`${hours}h ${minutes}m`}</p>
         </div>

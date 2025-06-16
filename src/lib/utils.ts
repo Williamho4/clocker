@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from 'clsx'
 import {
+  differenceInMinutes,
   endOfISOWeek,
   format,
   intervalToDuration,
@@ -75,4 +76,11 @@ export const weekToDates = async (week: number, year: number) => {
   const endDate = endOfISOWeek(dateInWeek)
 
   return [startDate, endDate]
+}
+
+export const getDateDiffrenceInHours = (startDate: Date, endDate: Date) => {
+  const minutes = differenceInMinutes(endDate, startDate)
+  const hours = minutes / 60
+
+  return Math.round(hours * 10) / 10
 }

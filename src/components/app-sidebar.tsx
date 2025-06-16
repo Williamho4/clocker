@@ -51,11 +51,6 @@ export function AppSidebar() {
       url: '/app/user',
       icon: User,
     },
-    {
-      title: 'Shifts',
-      url: '/app/shifts',
-      icon: CalendarClock,
-    },
   ]
 
   if (activeOrganization) {
@@ -75,6 +70,11 @@ export function AppSidebar() {
         title: 'Check-In',
         url: `/app/${activeOrganization?.id}/check-in`,
         icon: Clock9,
+      },
+      {
+        title: 'Shifts',
+        url: '/app/shifts',
+        icon: CalendarClock,
       }
     )
   }

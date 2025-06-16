@@ -6,8 +6,8 @@ import { Button } from './ui/button'
 export default function CreateOrgForm() {
   const handleCreate = async () => {
     await authClient.organization.create({
-      name: 'Kfc',
-      slug: 'kfc',
+      name: 'Mcdonalds',
+      slug: 'Mcdonalds',
     })
   }
 
