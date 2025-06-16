@@ -2,17 +2,14 @@
 
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/db'
+import { scheduleSelect } from '@/lib/prisma/schedule/select'
 import { weekToDates } from '@/lib/utils'
 import { Organization, User } from '@prisma/client'
 import {
   addDays,
   endOfDay,
-  endOfISOWeek,
   isLeapYear,
-  setISOWeek,
   startOfDay,
-  startOfISOWeek,
-  startOfWeek,
   startOfYear,
 } from 'date-fns'
 import { revalidatePath } from 'next/cache'
@@ -124,7 +121,7 @@ export const deleteShift = async (shiftId: string) => {
         id: shiftId,
       },
     })
-  } catch (error) {
+  } catch {
     return {
       message: 'Could not delete shift',
     }
@@ -148,19 +145,7 @@ export const getSchedulesForWeek = async (
       },
       organizationId: orgId,
     },
-    include: {
-      shifts: {
-        orderBy: [{ startTime: 'asc' }, { endTime: 'asc' }],
-        include: {
-          user: {
-            select: {
-              firstName: true,
-              lastName: true,
-            },
-          },
-        },
-      },
-    },
+    include: scheduleSelect,
   })
 
   return schedules

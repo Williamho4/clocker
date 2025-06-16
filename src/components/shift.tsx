@@ -1,7 +1,6 @@
 import { format } from 'date-fns'
 import { ShiftAndNames } from '@/lib/types'
 import RemoveShiftBtn from './remove-shift-btn'
-import { Dispatch, SetStateAction } from 'react'
 
 type ShiftProps = {
   shiftData: ShiftAndNames

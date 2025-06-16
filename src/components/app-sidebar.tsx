@@ -1,6 +1,13 @@
 'use client'
 
-import { Building2, Calendar, Home, User, Clock9 } from 'lucide-react'
+import {
+  Building2,
+  Calendar,
+  Home,
+  User,
+  Clock9,
+  CalendarClock,
+} from 'lucide-react'
 import {
   Sidebar,
   SidebarContent,
@@ -43,6 +50,11 @@ export function AppSidebar() {
       title: 'User',
       url: '/app/user',
       icon: User,
+    },
+    {
+      title: 'Shifts',
+      url: '/app/shifts',
+      icon: CalendarClock,
     },
   ]
 

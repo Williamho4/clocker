@@ -1,6 +1,5 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
 import prisma from './db'
 import { addHours, subHours } from 'date-fns'
 
@@ -41,7 +40,7 @@ export async function checkIfShiftExistForAttendance(memberId: string) {
       },
     })
     return shift
-  } catch (error) {
+  } catch {
     return null
   }
 }
@@ -70,12 +69,12 @@ export async function createBreak(attendanceId: string) {
     })
 
     return pause
-  } catch (error) {
+  } catch {
     return null
   }
 }
 
-export async function editBreakToDone(breakId: string, orgId: string) {
+export async function editBreakToDone(breakId: string) {
   try {
     const pause = await prisma.break.update({
       where: {
@@ -88,7 +87,7 @@ export async function editBreakToDone(breakId: string, orgId: string) {
     })
 
     return pause
-  } catch (error) {
+  } catch {
     return null
   }
 }

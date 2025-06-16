@@ -2,7 +2,7 @@ import { User } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import AddShiftBtn from './add-shift-btn'
 import { addDays, format, isSameDay, startOfDay, startOfWeek } from 'date-fns'
-import { ScheduleAndShifts, Weekday } from '@/lib/types'
+import { Weekday } from '@/lib/types'
 import {
   cn,
   countTotalHoursForDay,
@@ -10,9 +10,10 @@ import {
   weekToDates,
 } from '@/lib/utils'
 import Shift from './shift'
+import { ScheduleWithShifts } from '@/lib/prisma/schedule/select'
 
 type ScheduleMakerProps = {
-  schedules: ScheduleAndShifts[]
+  schedules: ScheduleWithShifts[]
   week: number
   year: number
   orgId: string
@@ -43,7 +44,7 @@ export default async function Schedule({
       <section className="space-y-5">
         <div className="grid grid-cols-1 s:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 gap-3">
           {weekDays.map((day) => {
-            const scheduleForDay: ScheduleAndShifts | undefined =
+            const scheduleForDay: ScheduleWithShifts | undefined =
               schedules.find((schedule) => isSameDay(schedule.date, day.date))
 
             return (
@@ -84,7 +85,7 @@ export default async function Schedule({
 type ShiftStatsProps = {
   day: Weekday
   todaysDate: Date
-  schedulesForDay: ScheduleAndShifts | null
+  schedulesForDay: ScheduleWithShifts | null
 }
 
 const ShiftStats = ({ schedulesForDay, day, todaysDate }: ShiftStatsProps) => {

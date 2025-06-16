@@ -6,9 +6,8 @@ import {
   setISOWeek,
   startOfISOWeek,
 } from 'date-fns'
-import { toZonedTime } from 'date-fns-tz'
 import { twMerge } from 'tailwind-merge'
-import { ScheduleAndShifts } from './types'
+import { ScheduleWithShifts } from './prisma/schedule/select'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -30,7 +29,7 @@ export function combineDateAndTime(date: Date, time: string): Date {
   return combined
 }
 
-export const countTotalHoursForDay = (schedule: ScheduleAndShifts) => {
+export const countTotalHoursForDay = (schedule: ScheduleWithShifts) => {
   let totalHours = 0
   let totalMinutes = 0
 
@@ -50,9 +49,9 @@ export const countTotalHoursForDay = (schedule: ScheduleAndShifts) => {
   return totalHours
 }
 
-export const countTotalWorkersForDay = (schedule: ScheduleAndShifts) => {
+export const countTotalWorkersForDay = (schedule: ScheduleWithShifts) => {
   let employees = 0
-  let employeeIds: string[] = []
+  const employeeIds: string[] = []
 
   schedule.shifts.forEach((shift) => {
     if (employeeIds.includes(shift.userId)) {
@@ -68,7 +67,7 @@ export const countTotalWorkersForDay = (schedule: ScheduleAndShifts) => {
 }
 
 export const weekToDates = async (week: number, year: number) => {
-  let janFirst = new Date(year, 0, 4)
+  const janFirst = new Date(year, 0, 4)
 
   const dateInWeek = setISOWeek(janFirst, week)
 

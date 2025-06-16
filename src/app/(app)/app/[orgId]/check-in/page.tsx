@@ -3,9 +3,7 @@ import { getAllActiveAttendances } from '@/actions/check-in-actions'
 import AttendanceCard from '@/components/attendance-card'
 
 type PageProps = {
-  params: {
-    orgId: string
-  }
+  params: Promise<{ orgId: string }>
 }
 
 export default async function Page({ params }: PageProps) {

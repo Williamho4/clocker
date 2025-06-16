@@ -10,13 +10,12 @@ import {
 import { Search, UserPlus } from 'lucide-react'
 import { Label } from './ui/label'
 import { Input } from './ui/input'
-import { Button } from './ui/button'
 import { useEffect, useState } from 'react'
 import { useDebounce } from 'use-debounce'
 import { searchOrgMember } from '@/actions/check-in-actions'
-import { MemberAndUserInfo } from '@/lib/types'
 import UserImage from './user-image'
 import CheckInBtn from './check-in-btn'
+import { MemberWithUser } from '@/lib/prisma/member/select'
 
 type CheckInSearchProps = {
   orgId: string
@@ -24,10 +23,10 @@ type CheckInSearchProps = {
 
 export default function CheckInSearch({ orgId }: CheckInSearchProps) {
   const [query, setQuery] = useState('')
-  const [employees, setEmployees] = useState<MemberAndUserInfo[] | []>([])
+  const [employees, setEmployees] = useState<MemberWithUser[] | []>([])
   const [searchValue] = useDebounce(query, 400)
   const [selectedEmployee, setSelectedEmployee] =
-    useState<MemberAndUserInfo | null>(null)
+    useState<MemberWithUser | null>(null)
 
   const resetSearch = () => {
     setQuery('')
@@ -41,12 +40,12 @@ export default function CheckInSearch({ orgId }: CheckInSearchProps) {
       setEmployees(employees)
     }
 
-    if (query.trim() !== '') {
+    if (searchValue.trim() !== '') {
       getEmployees()
     } else {
       setEmployees([])
     }
-  }, [searchValue])
+  }, [searchValue, orgId])
 
   return (
     <Card className="">

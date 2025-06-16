@@ -3,15 +3,10 @@ import { Session } from '@/lib/auth-types'
 import InviteCard from './invite-card'
 import {
   Card,
-  CardAction,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Button } from './ui/button'
-import { Invitation } from '@prisma/client'
-import { authClient } from '@/lib/auth-client'
 
 type InviteListProps = {
   session: Session

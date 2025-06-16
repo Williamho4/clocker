@@ -5,7 +5,6 @@ import { Button } from './ui/button'
 import { deleteShift } from '@/actions/schedule-actions'
 import { toast } from 'sonner'
 import { ShiftAndNames } from '@/lib/types'
-import { Dispatch, SetStateAction } from 'react'
 
 type RemoveShiftBtnProps = {
   shiftData: ShiftAndNames

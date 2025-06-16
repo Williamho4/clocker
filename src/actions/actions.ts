@@ -4,6 +4,10 @@ import { auth, ErrorCode } from '@/lib/auth'
 import { signInSchema, signUpSchema } from '@/lib/validations'
 import { APIError } from 'better-auth/api'
 import prisma from '@/lib/db'
+import {
+  invitationSelect,
+  InvitationWithOrg,
+} from '@/lib/prisma/Invitation/select'
 
 export const signUpUser = async (signUpData: unknown) => {
   const validatedData = signUpSchema.safeParse(signUpData)
@@ -81,18 +85,12 @@ export const checkIfUserExists = async (email: string) => {
   }
 }
 
-export const getAllUserInvites = async (email: string) => {
+export const getAllUserInvites = async (
+  email: string
+): Promise<InvitationWithOrg[]> => {
   const invites = await prisma.invitation.findMany({
-    where: {
-      email,
-    },
-    include: {
-      organization: {
-        select: {
-          name: true,
-        },
-      },
-    },
+    where: { email },
+    select: invitationSelect,
   })
 
   return invites

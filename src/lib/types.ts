@@ -1,4 +1,4 @@
-import { Member, Schedule, Shift, User } from '@prisma/client'
+import { Shift } from '@prisma/client'
 
 export type signUpPayload = {
   email: string
@@ -18,12 +18,4 @@ export type ShiftAndNames = Shift & {
     firstName: string
     lastName: string
   }
-}
-
-export type ScheduleAndShifts = Schedule & {
-  shifts: ShiftAndNames[]
-}
-
-export type MemberAndUserInfo = Member & {
-  user: User
 }

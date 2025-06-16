@@ -1,5 +1,4 @@
 import CreateOrgForm from '@/components/create-org-form'
-import InviteList from '@/components/invite-list'
 import SignOutBtn from '@/components/sign-out-btn'
 import { auth } from '@/lib/auth'
 import { headers } from 'next/headers'

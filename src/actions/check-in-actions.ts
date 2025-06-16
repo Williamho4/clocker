@@ -3,6 +3,10 @@
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/db'
 import {
+  MemberWithUser,
+  memberWithUserSelect,
+} from '@/lib/prisma/member/select'
+import {
   checkIfCheckedInAlready,
   checkIfOnBreak,
   checkIfShiftExistForAttendance,
@@ -48,7 +52,7 @@ export const checkOutEmployee = async (attendanceId: string, orgId: string) => {
   const onBreak = await checkIfOnBreak(attendanceId)
 
   if (onBreak) {
-    const pause = await editBreakToDone(onBreak.id, orgId)
+    const pause = await editBreakToDone(onBreak.id)
 
     if (!pause) {
       return { message: 'Could not check out, please try again' }
@@ -66,7 +70,7 @@ export const checkOutEmployee = async (attendanceId: string, orgId: string) => {
       },
     })
     revalidatePath(`/app/${orgId}/check-in`)
-  } catch (error) {
+  } catch {
     return { message: 'Could not check out' }
   }
 }
@@ -88,49 +92,34 @@ export const checkInEmployee = async (orgId: string, memberId: string) => {
 
   const shift = await checkIfShiftExistForAttendance(memberId)
 
-  if (shift) {
-    try {
-      await prisma.attendance.create({
-        data: {
-          status: 'CHECKED_IN',
-          checkInTime: new Date(),
-          organization: {
-            connect: { id: orgId },
-          },
-          member: {
-            connect: { id: memberId },
-          },
+  try {
+    await prisma.attendance.create({
+      data: {
+        status: 'CHECKED_IN',
+        checkInTime: new Date(),
+        organization: {
+          connect: { id: orgId },
+        },
+        member: {
+          connect: { id: memberId },
+        },
+        ...(shift && {
           shift: {
             connect: { id: shift.id },
           },
-        },
-      })
-      revalidatePath(`/app/${orgId}/check-in`)
-    } catch (error) {
-      return { message: 'Could not check in' }
-    }
-  } else {
-    try {
-      await prisma.attendance.create({
-        data: {
-          status: 'CHECKED_IN',
-          checkInTime: new Date(),
-          organization: {
-            connect: { id: orgId },
-          },
-          member: {
-            connect: { id: memberId },
-          },
-        },
-      })
-      revalidatePath(`/app/${orgId}/check-in`)
-    } catch (error) {
-      return { message: 'Could not check in' }
-    }
+        }),
+      },
+    })
+    revalidatePath(`/app/${orgId}/check-in`)
+  } catch {
+    return { message: 'Could not check in' }
   }
 }
 
-export const searchOrgMember = async (orgId: string, employeeName: string) => {
+export const searchOrgMember = async (
+  orgId: string,
+  employeeName: string
+): Promise<MemberWithUser[]> => {
   const activeMember = await auth.api.getActiveMember({
     headers: await headers(),
   })
@@ -143,17 +132,15 @@ export const searchOrgMember = async (orgId: string, employeeName: string) => {
   try {
     const members = await prisma.member.findMany({
       where: {
+        organizationId: orgId,
         user: {
           name: {
             contains: employeeName,
             mode: 'insensitive',
           },
         },
-        organizationId: orgId,
       },
-      include: {
-        user: true,
-      },
+      select: memberWithUserSelect,
     })
 
     return members
@@ -180,7 +167,7 @@ export const startBreak = async (attendanceId: string, orgId: string) => {
 }
 
 export const stopBreak = async (breakId: string, orgId: string) => {
-  const pause = await editBreakToDone(breakId, orgId)
+  const pause = await editBreakToDone(breakId)
 
   if (!pause) {
     return { message: 'Could not stop break' }

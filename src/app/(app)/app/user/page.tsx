@@ -10,8 +10,6 @@ export default async function Page() {
 
   if (!session) redirect('/auth/sign-in')
 
-  const { user } = session
-
   return (
     <main className="w-full 2xl:w-[90%] xl:m-auto h-full bg-slate-300 p-4 ">
       <InviteList session={session} />

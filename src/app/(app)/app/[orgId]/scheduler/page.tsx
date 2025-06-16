@@ -7,13 +7,8 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 
 type PageProps = {
-  params: {
-    orgId: string
-  }
-  searchParams: {
-    week: number
-    year: number
-  }
+  params: Promise<{ orgId: string }>
+  searchParams: Promise<{ week: number; year: number }>
 }
 export default async function Page({ params, searchParams }: PageProps) {
   const { orgId } = await params

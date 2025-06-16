@@ -9,17 +9,11 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Button } from './ui/button'
-import { Invitation } from '@prisma/client'
 import { authClient } from '@/lib/auth-client'
-
-type InvitaionWithOrgName = Invitation & {
-  organization: {
-    name: string
-  }
-}
+import { InvitationWithOrg } from '@/lib/prisma/Invitation/select'
 
 type InvitationCardProps = {
-  invitation: InvitaionWithOrgName
+  invitation: InvitationWithOrg
 }
 
 export default function InviteCard({ invitation }: InvitationCardProps) {
