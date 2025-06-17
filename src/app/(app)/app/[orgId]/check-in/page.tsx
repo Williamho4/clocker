@@ -12,7 +12,7 @@ export default async function Page({ params }: PageProps) {
 
   return (
     <main
-      className="w-full 2xl:w-[75%] xl:m-auto h-full bg-slate-300 p-4 space-y-5
+      className="w-full 2xl:w-[75%] xl:m-auto h-full p-4 space-y-5
      "
     >
       <CheckInSearch orgId={orgId} />

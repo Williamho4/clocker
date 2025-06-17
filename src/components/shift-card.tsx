@@ -11,8 +11,8 @@ import { getDateDiffrenceInHours } from '@/lib/utils'
 import { Shift } from '@prisma/client'
 import { format } from 'date-fns'
 import { Calendar, Clock, User } from 'lucide-react'
-import { Button } from './ui/button'
 import { Badge } from './ui/badge'
+import { RequestShiftChangeDialog } from './request-shift-change-dialog'
 
 type ShiftCardProps = {
   shiftData: Shift
@@ -56,7 +56,7 @@ export default function ShiftCard({ shiftData }: ShiftCardProps) {
         </div>
       </CardContent>
       <CardFooter className="w-full">
-        <Button className="w-full">Request Change</Button>
+        <RequestShiftChangeDialog />
       </CardFooter>
     </Card>
   )

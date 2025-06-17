@@ -105,6 +105,7 @@ export const deleteShift = async (shiftId: string) => {
     headers: await headers(),
   })
 
+  //change this
   const organization = await auth.api.getFullOrganization({
     headers: await headers(),
   })

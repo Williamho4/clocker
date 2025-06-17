@@ -40,8 +40,8 @@ export default async function Page({ params, searchParams }: PageProps) {
   }
 
   return (
-    <main className="w-full 2xl:w-[90%] xl:m-auto h-full bg-slate-300 p-4 ">
-      <CardHeader className="bg-white rounded-xl p-4 mb-4">
+    <main className="w-full 2xl:w-[90%] xl:m-auto h-full  p-4 ">
+      <CardHeader className="bg-white rounded-xl p-4 mb-4 shadow-md border  ">
         <div className="flex flex-col gap-5 lg:flex-row lg:justify-between lg:items-center">
           <div>
             <CardTitle className="text-xl">

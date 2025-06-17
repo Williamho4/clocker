@@ -12,8 +12,8 @@ import {
   CardContent,
   CardFooter,
 } from './ui/card'
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { Badge } from './ui/badge'
+import UserImage from './user-image'
 
 type MemberAndUser = Member & {
   user: User
@@ -45,12 +45,7 @@ export default function AttendanceCard({
     <Card>
       <CardHeader>
         <div className="flex gap-3 items-center min-h-[40px]">
-          <Avatar className="h-8 w-8 rounded-lg">
-            <AvatarImage
-              src={`https://ui-avatars.com/api/?name=${user.firstName}+${user.lastName}&background=random&rounded=true&font-size=0.33`}
-            />
-            <AvatarFallback className="rounded-lg">CN</AvatarFallback>
-          </Avatar>
+          <UserImage firstName={user.firstName} lastName={user.lastName} />
           <div className="space-y-1">
             <CardTitle className="capitalize">{user.name}</CardTitle>
             {attendance.shift && (

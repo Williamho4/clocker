@@ -11,7 +11,7 @@ export default async function Page() {
   const shifts = await getAllUserShifts()
 
   return (
-    <main className="w-full 2xl:w-[90%] xl:m-auto h-full bg-slate-300 p-4 space-y-6 ">
+    <main className="w-full 2xl:w-[90%] xl:m-auto h-full  p-4 space-y-6 ">
       <ShiftStats />
       <div className="grid gap-5 grid-cols-1 md:grid-cols-2 lg:grid-cols-3  ">
         {shifts.map((shift) => (

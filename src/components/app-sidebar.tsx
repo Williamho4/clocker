@@ -80,7 +80,7 @@ export function AppSidebar() {
   }
 
   return (
-    <Sidebar variant="inset">
+    <Sidebar variant="floating" collapsible="icon">
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>
