@@ -9,11 +9,9 @@ import {
   SelectValue,
 } from './ui/select'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { authClient } from '@/lib/auth-client'
 
 export default function OrgSelector() {
-  const router = useRouter()
   const [isSelectorOpen, setIsSelectorOpen] = useState(false)
   const { data: organizations } = authClient.useListOrganizations()
   const { data: activeOrg } = authClient.useActiveOrganization()
