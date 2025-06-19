@@ -28,7 +28,7 @@ const ShiftStats = async () => {
   const totalHoursWorkedThisMonth = await getTotalHoursWorkedThisMonth();
 
   return (
-    <div className="grid gap-5 grid-cols-3 ">
+    <div className="grid gap-5 grid-cols-1 md:grid-cols-3 ">
       <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl border border-blue-200">
         <div className="flex items-center justify-between">
           <div>
