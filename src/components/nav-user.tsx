@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import {
   BellIcon,
@@ -6,9 +6,9 @@ import {
   LogOutIcon,
   MoreVerticalIcon,
   UserCircleIcon,
-} from 'lucide-react'
+} from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,21 +17,23 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from "@/components/ui/dropdown-menu";
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from '@/components/ui/sidebar'
-import { authClient } from '@/lib/auth-client'
+} from "@/components/ui/sidebar";
+import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
 
 export function NavUser() {
-  const { isMobile } = useSidebar()
-  const { data: session } = authClient.useSession()
+  const router = useRouter();
+  const { isMobile } = useSidebar();
+  const { data: session } = authClient.useSession();
 
   if (!session) {
-    return
+    return;
   }
 
   return (
@@ -62,7 +64,7 @@ export function NavUser() {
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-            side={isMobile ? 'bottom' : 'right'}
+            side={isMobile ? "bottom" : "right"}
             align="end"
             sideOffset={4}
           >
@@ -76,7 +78,7 @@ export function NavUser() {
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">
-                    {' '}
+                    {" "}
                     {session.user.name}
                   </span>
                   <span className="truncate text-xs text-muted-foreground">
@@ -101,7 +103,17 @@ export function NavUser() {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={async () => {
+                await authClient.signOut({
+                  fetchOptions: {
+                    onSuccess: () => {
+                      router.push("/auth/sign-in");
+                    },
+                  },
+                });
+              }}
+            >
               <LogOutIcon />
               Log out
             </DropdownMenuItem>
@@ -109,5 +121,5 @@ export function NavUser() {
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
-  )
+  );
 }

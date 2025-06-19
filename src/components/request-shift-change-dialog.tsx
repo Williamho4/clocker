@@ -1,5 +1,5 @@
-import { getAllColleagues } from '@/actions/organization-actions'
-import { Button } from '@/components/ui/button'
+import { getAllColleagues } from "@/actions/organization-actions";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -9,20 +9,18 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from './ui/select'
-import UserImage from './user-image'
+} from "./ui/select";
+import UserImage from "./user-image";
 
 export async function RequestShiftChangeDialog() {
-  const colleagues = await getAllColleagues()
+  const colleagues = await getAllColleagues();
 
   return (
     <Dialog>
@@ -43,7 +41,11 @@ export async function RequestShiftChangeDialog() {
             </SelectTrigger>
             <SelectContent>
               {colleagues.map((colleague) => (
-                <SelectItem value={colleague.id} className="capitalize ">
+                <SelectItem
+                  key={colleague.id}
+                  value={colleague.id}
+                  className="capitalize "
+                >
                   <UserImage
                     className="h-6 w-6 m-auto"
                     firstName={colleague.user.firstName}
@@ -63,5 +65,5 @@ export async function RequestShiftChangeDialog() {
         </DialogContent>
       </form>
     </Dialog>
-  )
+  );
 }

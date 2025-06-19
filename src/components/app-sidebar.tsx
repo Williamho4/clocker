@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import {
   Building2,
@@ -7,7 +7,8 @@ import {
   User,
   Clock9,
   CalendarClock,
-} from 'lucide-react'
+  DollarSign,
+} from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -18,77 +19,71 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from '@/components/ui/sidebar'
-import Link from 'next/link'
-import { Label } from './ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from './ui/select'
-import { useState } from 'react'
-import { authClient } from '@/lib/auth-client'
-import { useRouter } from 'next/navigation'
-import { NavUser } from './nav-user'
-import { getISOWeek, getISOWeekYear } from 'date-fns'
+} from "@/components/ui/sidebar";
+import Link from "next/link";
+import { authClient } from "@/lib/auth-client";
+import { NavUser } from "./nav-user";
+import { getISOWeek, getISOWeekYear } from "date-fns";
 
 export function AppSidebar() {
-  const { data: activeOrganization } = authClient.useActiveOrganization()
-  const currentDate = new Date()
-  const weekNumber = getISOWeek(currentDate)
-  const year = getISOWeekYear(currentDate)
+  const { data: activeOrganization } = authClient.useActiveOrganization();
+  const activeMember = authClient.useActiveMember();
+  const currentDate = new Date();
+  const weekNumber = getISOWeek(currentDate);
+  const year = getISOWeekYear(currentDate);
 
   const items = [
     {
-      title: 'Home',
-      url: '/app',
+      title: "Home",
+      url: "/application",
       icon: Home,
     },
     {
-      title: 'User',
-      url: '/app/user',
-      icon: User,
+      title: "Shifts",
+      url: "/application/shifts",
+      icon: CalendarClock,
     },
-  ]
+  ];
 
-  if (activeOrganization) {
-    items.push(
-      {
-        title: 'Company',
-        url: `/app/${activeOrganization?.id}/admin`,
-        icon: Building2,
-      },
+  const adminItems = [
+    {
+      title: "Company",
+      url: `/application/${activeOrganization?.id}/admin`,
+      icon: Building2,
+    },
 
-      {
-        title: 'Scheduler',
-        url: `/app/${activeOrganization?.id}/scheduler?week=${weekNumber}&year=${year}`,
-        icon: Calendar,
-      },
-      {
-        title: 'Check-In',
-        url: `/app/${activeOrganization?.id}/check-in`,
-        icon: Clock9,
-      },
-      {
-        title: 'Shifts',
-        url: '/app/shifts',
-        icon: CalendarClock,
-      }
-    )
-  }
+    {
+      title: "Scheduler",
+      url: `/application/${activeOrganization?.id}/scheduler?week=${weekNumber}&year=${year}`,
+      icon: Calendar,
+    },
+    {
+      title: "Check-In",
+      url: `/application/${activeOrganization?.id}/check-in`,
+      icon: Clock9,
+    },
+    {
+      title: "Tips",
+      url: `/application/${activeOrganization?.id}/tips`,
+      icon: DollarSign,
+    },
+  ];
 
   return (
     <Sidebar variant="floating" collapsible="icon">
-      <SidebarContent>
+      <SidebarContent className="gap-0">
         <SidebarGroup>
-          <SidebarGroupLabel>
-            <h1>Clocker</h1>
-          </SidebarGroupLabel>
+          <SidebarMenuButton asChild>
+            <Link href={"/application/user"}>
+              <User />
+              <span>User</span>
+            </Link>
+          </SidebarMenuButton>
+        </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupLabel>Clocker</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              <OrganizationSelecter />
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
@@ -102,47 +97,29 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        {activeMember.data?.role !== "member" && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Admin</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {adminItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <Link href={item.url}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
       <SidebarFooter>
         <NavUser />
       </SidebarFooter>
     </Sidebar>
-  )
-}
-
-const OrganizationSelecter = () => {
-  const router = useRouter()
-  const [isSelectorOpen, setIsSelectorOpen] = useState(false)
-  const { data: organizations } = authClient.useListOrganizations()
-
-  return (
-    <>
-      {organizations && (
-        <SidebarMenuItem className="space-y-3">
-          <Label className="ml-1">Organzations</Label>
-          <Select
-            open={isSelectorOpen}
-            onOpenChange={setIsSelectorOpen}
-            onValueChange={async (organizationId) => {
-              await authClient.organization.setActive({
-                organizationId,
-              })
-              router.push(`/app/${organizationId}`)
-            }}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {organizations.map((org) => (
-                <SelectItem className=" capitalize" key={org.id} value={org.id}>
-                  {org.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </SidebarMenuItem>
-      )}
-    </>
-  )
+  );
 }

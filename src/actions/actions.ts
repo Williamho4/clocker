@@ -1,24 +1,24 @@
-'use server'
+"use server";
 
-import { auth, ErrorCode } from '@/lib/auth'
-import { signInSchema, signUpSchema } from '@/lib/validations'
-import { APIError } from 'better-auth/api'
-import prisma from '@/lib/db'
+import { auth, ErrorCode } from "@/lib/auth";
+import { signInSchema, signUpSchema } from "@/lib/validations";
+import { APIError } from "better-auth/api";
+import prisma from "@/lib/db";
 import {
   invitationSelect,
   InvitationWithOrg,
-} from '@/lib/prisma/Invitation/select'
+} from "@/lib/prisma/Invitation/select";
 
 export const signUpUser = async (signUpData: unknown) => {
-  const validatedData = signUpSchema.safeParse(signUpData)
+  const validatedData = signUpSchema.safeParse(signUpData);
 
   if (!validatedData.success) {
     return {
-      error: 'Not valid form data',
-    }
+      error: "Not valid form data",
+    };
   }
 
-  const { email, password, firstName, lastName } = validatedData.data
+  const { email, password, firstName, lastName } = validatedData.data;
 
   try {
     await auth.api.signUpEmail({
@@ -29,31 +29,31 @@ export const signUpUser = async (signUpData: unknown) => {
         firstName,
         lastName,
       },
-    })
+    });
 
-    return { error: null }
+    return { error: null };
   } catch (error) {
     if (error instanceof APIError) {
-      const errCode = error.body ? (error.body.code as ErrorCode) : 'UNKNOWN'
+      const errCode = error.body ? (error.body.code as ErrorCode) : "UNKNOWN";
       switch (errCode) {
-        case 'USER_ALREADY_EXISTS':
-          return { error: 'Something went wrong, Please try again' }
+        case "USER_ALREADY_EXISTS":
+          return { error: "Something went wrong, Please try again" };
         default:
-          return { error: error.message }
+          return { error: error.message };
       }
     }
 
-    return { error: 'Internal server error' }
+    return { error: "Internal server error" };
   }
-}
+};
 
 export const signInUser = async (logInData: unknown) => {
-  const validatedData = signInSchema.safeParse(logInData)
+  const validatedData = signInSchema.safeParse(logInData);
 
   if (!validatedData.success) {
     return {
-      error: 'Not valid form data',
-    }
+      error: "Not valid form data",
+    };
   }
 
   try {
@@ -61,29 +61,17 @@ export const signInUser = async (logInData: unknown) => {
       body: {
         ...validatedData.data,
       },
-    })
+    });
 
-    return { error: null }
+    return { error: null };
   } catch (error) {
     if (error instanceof APIError) {
-      return { error: error.message }
+      return { error: error.message };
     }
 
-    return { error: 'Internal server error' }
+    return { error: "Internal server error" };
   }
-}
-
-export const checkIfUserExists = async (email: string) => {
-  const userExists = await prisma.user.findUnique({
-    where: { email: email },
-  })
-
-  if (userExists) {
-    return true
-  } else {
-    return false
-  }
-}
+};
 
 export const getAllUserInvites = async (
   email: string
@@ -91,7 +79,7 @@ export const getAllUserInvites = async (
   const invites = await prisma.invitation.findMany({
     where: { email },
     select: invitationSelect,
-  })
+  });
 
-  return invites
-}
+  return invites;
+};

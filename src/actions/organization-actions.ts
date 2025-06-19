@@ -1,20 +1,20 @@
-'use server'
+"use server";
 
-import { auth } from '@/lib/auth'
-import { headers } from 'next/headers'
-import prisma from '@/lib/db'
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import prisma from "@/lib/db";
 import {
   MemberWithUser,
   memberWithUserSelect,
-} from '@/lib/prisma/member/select'
+} from "@/lib/prisma/member/select";
 
 export const getAllColleagues = async (): Promise<MemberWithUser[]> => {
   const activeMember = await auth.api.getActiveMember({
     headers: await headers(),
-  })
+  });
 
   if (!activeMember) {
-    return []
+    return [];
   }
 
   try {
@@ -26,10 +26,10 @@ export const getAllColleagues = async (): Promise<MemberWithUser[]> => {
         },
       },
       select: memberWithUserSelect,
-    })
+    });
 
-    return colleagues
+    return colleagues;
   } catch {
-    return []
+    return [];
   }
-}
+};

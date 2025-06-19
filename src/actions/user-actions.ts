@@ -1,17 +1,57 @@
-'use server'
+"use server";
 
-import { auth } from '@/lib/auth'
-import prisma from '@/lib/db'
-import { endOfWeek, startOfDay, startOfWeek, subDays } from 'date-fns'
-import { headers } from 'next/headers'
+import { auth } from "@/lib/auth";
+import prisma from "@/lib/db";
+import { organizationWithMemberRoleSelect } from "@/lib/prisma/organization/select";
+import { endOfWeek, startOfDay, startOfWeek, subDays } from "date-fns";
+import { headers } from "next/headers";
+
+export const checkIfUserExists = async (email: string) => {
+  const userExists = await prisma.user.findUnique({
+    where: { email: email },
+  });
+
+  if (userExists) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
+export const getAllUsersOrganizations = async () => {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session) {
+    return;
+  }
+
+  return await prisma.organization.findMany({
+    where: {
+      members: {
+        some: {
+          userId: session.user.id,
+        },
+      },
+    },
+    select: {
+      ...organizationWithMemberRoleSelect,
+      members: {
+        where: { userId: session.user.id },
+        select: organizationWithMemberRoleSelect.members.select,
+      },
+    },
+  });
+};
 
 export async function getAllUserShifts() {
   const activeMember = await auth.api.getActiveMember({
     headers: await headers(),
-  })
+  });
 
   if (!activeMember) {
-    return []
+    return [];
   }
 
   const shifts = await prisma.shift.findMany({
@@ -25,20 +65,20 @@ export async function getAllUserShifts() {
       },
     },
     orderBy: {
-      startTime: 'asc',
+      startTime: "asc",
     },
-  })
+  });
 
-  return shifts
+  return shifts;
 }
 
 export async function getTotalHoursWorkedThisMonth() {
   const activeMember = await auth.api.getActiveMember({
     headers: await headers(),
-  })
+  });
 
   if (!activeMember) {
-    return null
+    return null;
   }
 
   try {
@@ -51,31 +91,31 @@ export async function getTotalHoursWorkedThisMonth() {
         },
         organizationId: activeMember.organizationId,
       },
-    })
+    });
 
-    let totalMilliseconds = 0
+    let totalMilliseconds = 0;
 
     for (const att of attendances) {
       if (att.checkInTime && att.checkOutTime) {
         totalMilliseconds +=
-          att.checkOutTime.getTime() - att.checkInTime.getTime()
+          att.checkOutTime.getTime() - att.checkInTime.getTime();
       }
     }
 
-    const totalHours = Math.round(totalMilliseconds / (1000 * 60 * 60))
-    return totalHours
+    const totalHours = Math.round(totalMilliseconds / (1000 * 60 * 60));
+    return totalHours;
   } catch {
-    return null
+    return null;
   }
 }
 
 export async function getTotalHoursPlannedThisWeek() {
   const activeMember = await auth.api.getActiveMember({
     headers: await headers(),
-  })
+  });
 
   if (!activeMember) {
-    return null
+    return null;
   }
 
   try {
@@ -90,28 +130,28 @@ export async function getTotalHoursPlannedThisWeek() {
           organizationId: activeMember.organizationId,
         },
       },
-    })
+    });
 
-    let totalMilliseconds = 0
+    let totalMilliseconds = 0;
 
     for (const shift of shifts) {
-      totalMilliseconds += shift.endTime.getTime() - shift.startTime.getTime()
+      totalMilliseconds += shift.endTime.getTime() - shift.startTime.getTime();
     }
 
-    const totalHours = Math.round(totalMilliseconds / (1000 * 60 * 60))
-    return totalHours
+    const totalHours = Math.round(totalMilliseconds / (1000 * 60 * 60));
+    return totalHours;
   } catch {
-    return null
+    return null;
   }
 }
 
 export async function getTotalUpcomingShifts() {
   const activeMember = await auth.api.getActiveMember({
     headers: await headers(),
-  })
+  });
 
   if (!activeMember) {
-    return null
+    return null;
   }
 
   try {
@@ -125,10 +165,10 @@ export async function getTotalUpcomingShifts() {
           organizationId: activeMember.organizationId,
         },
       },
-    })
+    });
 
-    return shifts
+    return shifts;
   } catch {
-    return null
+    return null;
   }
 }
