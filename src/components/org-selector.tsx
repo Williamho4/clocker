@@ -1,22 +1,22 @@
-"use client";
+'use client'
 
-import { Label } from "./ui/label";
+import { Label } from './ui/label'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "./ui/select";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
+} from './ui/select'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { authClient } from '@/lib/auth-client'
 
 export default function OrgSelector() {
-  const router = useRouter();
-  const [isSelectorOpen, setIsSelectorOpen] = useState(false);
-  const { data: organizations } = authClient.useListOrganizations();
-  const { data: activeOrg } = authClient.useActiveOrganization();
+  const router = useRouter()
+  const [isSelectorOpen, setIsSelectorOpen] = useState(false)
+  const { data: organizations } = authClient.useListOrganizations()
+  const { data: activeOrg } = authClient.useActiveOrganization()
 
   return (
     <>
@@ -29,8 +29,8 @@ export default function OrgSelector() {
             onValueChange={async (organizationId) => {
               await authClient.organization.setActive({
                 organizationId,
-              });
-              router.push(`/application/${organizationId}`);
+              })
+              window.location.reload()
             }}
             value={activeOrg?.id}
           >
@@ -52,5 +52,5 @@ export default function OrgSelector() {
         </div>
       )}
     </>
-  );
+  )
 }
