@@ -1,60 +1,60 @@
-import { Label } from "./ui/label";
+import { Label } from './ui/label'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "./ui/select";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
-import { combineDateAndTime } from "@/lib/utils";
-import { createShift } from "@/actions/schedule-actions";
-import { redirect } from "next/navigation";
-import { Dispatch, SetStateAction } from "react";
-import { toast } from "sonner";
-import { authClient } from "@/lib/auth-client";
+} from './ui/select'
+import { Input } from './ui/input'
+import { Button } from './ui/button'
+import { combineDateAndTime } from '@/lib/utils'
+import { createShift } from '@/actions/schedule-actions'
+import { redirect } from 'next/navigation'
+import { Dispatch, SetStateAction } from 'react'
+import { toast } from 'sonner'
+import { authClient } from '@/lib/auth-client'
 
 type ShiftFormProps = {
-  selectedDay: Date;
-  setIsFormOpen: Dispatch<SetStateAction<boolean>>;
-  orgId: string;
-};
+  selectedDay: Date
+  setIsFormOpen: Dispatch<SetStateAction<boolean>>
+  orgId: string
+}
 
 export default function ShiftForm({
   selectedDay,
   setIsFormOpen,
   orgId,
 }: ShiftFormProps) {
-  const { data: organization } = authClient.useActiveOrganization();
+  const { data: organization } = authClient.useActiveOrganization()
 
   if (!organization) {
-    redirect("/application/start");
+    redirect('/application/start')
   }
 
   const handleFormSubmit = async (formData: FormData) => {
-    const startTime = formData.get("startTime") as string;
-    const endTime = formData.get("endTime") as string;
-    const employeeId = formData.get("employee") as string;
+    const startTime = formData.get('startTime') as string
+    const endTime = formData.get('endTime') as string
+    const memberId = formData.get('employee') as string
 
-    const formattedStartTime = combineDateAndTime(selectedDay, startTime);
-    const formattedEndTime = combineDateAndTime(selectedDay, endTime);
+    const formattedStartTime = combineDateAndTime(selectedDay, startTime)
+    const formattedEndTime = combineDateAndTime(selectedDay, endTime)
 
     const error = await createShift(
       formattedStartTime,
       formattedEndTime,
-      employeeId,
+      memberId,
       orgId
-    );
+    )
 
     if (error) {
-      toast.error(error.message);
-      return;
+      toast.error(error.message)
+      return
     }
 
-    toast.success("Shift Created");
-    setIsFormOpen(false);
-  };
+    toast.success('Shift Created')
+    setIsFormOpen(false)
+  }
 
   return (
     <form action={handleFormSubmit}>
@@ -66,7 +66,7 @@ export default function ShiftForm({
           </SelectTrigger>
           <SelectContent>
             {organization.members.map((member) => (
-              <SelectItem key={member.id} value={member.userId}>
+              <SelectItem key={member.id} value={member.id}>
                 <p className="capitalize">{member.user.name}</p>
               </SelectItem>
             ))}
@@ -86,5 +86,5 @@ export default function ShiftForm({
         </Select>
       </div>
     </form>
-  );
+  )
 }

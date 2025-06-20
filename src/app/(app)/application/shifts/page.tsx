@@ -1,31 +1,44 @@
+import { getAllColleagues } from '@/actions/organization-actions'
 import {
   getAllUserShifts,
   getTotalHoursPlannedThisWeek,
   getTotalHoursWorkedThisMonth,
   getTotalUpcomingShifts,
-} from "@/actions/user-actions";
-import ShiftCard from "@/components/shift-card";
-import { Calendar, Clock, User } from "lucide-react";
+} from '@/actions/user-actions'
+import ShiftCard from '@/components/shift-card'
+import { auth } from '@/lib/auth'
+import { Calendar, Clock, User } from 'lucide-react'
+import { headers } from 'next/headers'
+import { redirect } from 'next/navigation'
 
 export default async function Page() {
-  const shifts = await getAllUserShifts();
+  const activeMember = await auth.api.getActiveMember({
+    headers: await headers(),
+  })
+
+  if (!activeMember) {
+    redirect('/application/start')
+  }
+
+  const shifts = await getAllUserShifts(activeMember)
+  const colleagues = await getAllColleagues()
 
   return (
     <main className="w-full 2xl:w-[90%] xl:m-auto h-full p-4 space-y-6 overflow-y-auto scrollbar-clean">
       <ShiftStats />
       <div className="grid gap-5 grid-cols-1 md:grid-cols-2 lg:grid-cols-3  ">
         {shifts.map((shift) => (
-          <ShiftCard key={shift.id} shiftData={shift} />
+          <ShiftCard key={shift.id} shiftData={shift} colleagues={colleagues} />
         ))}
       </div>
     </main>
-  );
+  )
 }
 
 const ShiftStats = async () => {
-  const totalHoursScheduled = await getTotalHoursPlannedThisWeek();
-  const totalUpcomingShifts = await getTotalUpcomingShifts();
-  const totalHoursWorkedThisMonth = await getTotalHoursWorkedThisMonth();
+  const totalHoursScheduled = await getTotalHoursPlannedThisWeek()
+  const totalUpcomingShifts = await getTotalUpcomingShifts()
+  const totalHoursWorkedThisMonth = await getTotalHoursWorkedThisMonth()
 
   return (
     <div className="grid gap-5 grid-cols-1 md:grid-cols-3 ">
@@ -36,7 +49,7 @@ const ShiftStats = async () => {
               Total Hours This Week
             </p>
             <p className="text-3xl font-bold text-blue-900">
-              {totalHoursScheduled ? totalHoursScheduled : "0"}
+              {totalHoursScheduled ? totalHoursScheduled : '0'}
             </p>
             <p className="text-blue-600 text-xs">Hours scheduled</p>
           </div>
@@ -80,5 +93,5 @@ const ShiftStats = async () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}

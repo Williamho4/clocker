@@ -4,10 +4,10 @@ import { Trash2 } from 'lucide-react'
 import { Button } from './ui/button'
 import { deleteShift } from '@/actions/schedule-actions'
 import { toast } from 'sonner'
-import { ShiftAndNames } from '@/lib/types'
+import { ScheduleWithShifts } from '@/lib/prisma/schedule/select'
 
 type RemoveShiftBtnProps = {
-  shiftData: ShiftAndNames
+  shiftData: ScheduleWithShifts['shifts'][number]
 }
 
 export default function RemoveShiftBtn({ shiftData }: RemoveShiftBtnProps) {
@@ -18,7 +18,7 @@ export default function RemoveShiftBtn({ shiftData }: RemoveShiftBtnProps) {
       return toast('Could not delete shift, please try again')
     }
 
-    toast.success(`${shiftData.user.firstName}'s Shift deleted`)
+    toast.success(`${shiftData.member.user.firstName}'s Shift deleted`)
   }
 
   return (

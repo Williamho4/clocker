@@ -4,10 +4,14 @@ export const scheduleSelect = {
   shifts: {
     orderBy: [{ startTime: 'asc' }, { endTime: 'asc' }],
     include: {
-      user: {
-        select: {
-          firstName: true,
-          lastName: true,
+      member: {
+        include: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+            },
+          },
         },
       },
     },

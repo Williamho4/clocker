@@ -80,23 +80,25 @@ export function AppSidebar() {
             </Link>
           </SidebarMenuButton>
         </SidebarGroup>
-        <SidebarGroup>
-          <SidebarGroupLabel>Clocker</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <Link href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {activeMember.data && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Clocker</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {items.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <Link href={item.url}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
         {activeMember.data && activeMember.data?.role !== 'member' && (
           <SidebarGroup>
             <SidebarGroupLabel>Admin</SidebarGroupLabel>

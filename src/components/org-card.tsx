@@ -3,7 +3,6 @@
 import { authClient } from '@/lib/auth-client'
 import { Card, CardHeader, CardTitle } from './ui/card'
 import { ChevronRight } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import { OrganizationWithMemberRole } from '@/lib/prisma/organization/select'
 import { Badge } from '@/components/ui/badge'
 
@@ -12,8 +11,6 @@ type OrgCardProps = {
 }
 
 export default function OrgCard({ org }: OrgCardProps) {
-  const router = useRouter()
-
   const handleClick = async (orgId: string) => {
     await authClient.organization.setActive({
       organizationId: orgId,

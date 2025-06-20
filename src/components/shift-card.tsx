@@ -12,13 +12,15 @@ import { Shift } from '@prisma/client'
 import { format } from 'date-fns'
 import { Calendar, Clock, User } from 'lucide-react'
 import { Badge } from './ui/badge'
-import { RequestShiftChangeDialog } from './request-shift-change-dialog'
+import { RequestShiftChangeBtn } from './request-shift-change-btn'
+import { MemberWithUser } from '@/lib/prisma/member/select'
 
 type ShiftCardProps = {
   shiftData: Shift
+  colleagues: MemberWithUser[]
 }
 
-export default function ShiftCard({ shiftData }: ShiftCardProps) {
+export default function ShiftCard({ shiftData, colleagues }: ShiftCardProps) {
   const totalHours = getDateDiffrenceInHours(
     shiftData.startTime,
     shiftData.endTime
@@ -56,7 +58,10 @@ export default function ShiftCard({ shiftData }: ShiftCardProps) {
         </div>
       </CardContent>
       <CardFooter className="w-full">
-        <RequestShiftChangeDialog />
+        <RequestShiftChangeBtn
+          selectedShift={shiftData}
+          colleagues={colleagues}
+        />
       </CardFooter>
     </Card>
   )

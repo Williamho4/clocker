@@ -12,10 +12,3 @@ export type Weekday = {
   dayName: string
   iso: string
 }
-
-export type ShiftAndNames = Shift & {
-  user: {
-    firstName: string
-    lastName: string
-  }
-}
