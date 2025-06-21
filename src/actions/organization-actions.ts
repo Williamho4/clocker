@@ -1,35 +1,27 @@
-"use server";
+'use server'
 
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
-import prisma from "@/lib/db";
-import {
-  MemberWithUser,
-  memberWithUserSelect,
-} from "@/lib/prisma/member/select";
+import prisma from '@/lib/db'
+import { memberWithUserSelect } from '@/lib/prisma/member/select'
+import { getActiveMember } from '@/lib/server-utils'
 
-export const getAllColleagues = async (): Promise<MemberWithUser[]> => {
-  const activeMember = await auth.api.getActiveMember({
-    headers: await headers(),
-  });
+export const getAllColleagues = async () => {
+  const activeMember = await getActiveMember()
 
-  if (!activeMember) {
-    return [];
-  }
+  const { organizationId } = activeMember
 
   try {
     const colleagues = await prisma.member.findMany({
       where: {
-        organizationId: activeMember.organizationId,
+        organizationId,
         id: {
           not: activeMember.id,
         },
       },
       select: memberWithUserSelect,
-    });
+    })
 
-    return colleagues;
+    return { success: true, data: colleagues }
   } catch {
-    return [];
+    return { success: false, message: 'Something went wrong, try again' }
   }
-};
+}

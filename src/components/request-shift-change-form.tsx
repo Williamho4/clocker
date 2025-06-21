@@ -27,7 +27,10 @@ export default function RequestShiftChangeForm({
   const handleSubmit = async (formData: FormData) => {
     const colleagueId = formData.get('colleague') as string
 
-    const error = await createShiftChangeRequest(colleagueId, selectedShift.id)
+    const error = await createShiftChangeRequest({
+      colleagueId,
+      shiftId: selectedShift.id,
+    })
 
     if (error) {
       toast.error(error.message)

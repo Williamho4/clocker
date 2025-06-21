@@ -1,7 +1,7 @@
-"use client";
+'use client'
 
-import * as React from "react";
-import { ChevronsUpDown } from "lucide-react";
+import * as React from 'react'
+import { ChevronsUpDown } from 'lucide-react'
 
 import {
   DropdownMenu,
@@ -10,28 +10,28 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu'
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar";
-import { authClient } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
+} from '@/components/ui/sidebar'
+import { authClient } from '@/lib/auth-client'
+import { useRouter } from 'next/navigation'
 
 export function TeamSwitcher() {
-  const router = useRouter();
-  const { isMobile } = useSidebar();
-  const { data: organizations } = authClient.useListOrganizations();
-  const { data: activeOrg } = authClient.useActiveOrganization();
+  const router = useRouter()
+  const { isMobile } = useSidebar()
+  const { data: organizations } = authClient.useListOrganizations()
+  const { data: activeOrg } = authClient.useActiveOrganization()
 
   if (!organizations) {
-    return null;
+    return null
   }
 
   if (!activeOrg) {
-    return null;
+    return null
   }
 
   return (
@@ -55,7 +55,7 @@ export function TeamSwitcher() {
           <DropdownMenuContent
             className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
             align="start"
-            side={isMobile ? "bottom" : "right"}
+            side={isMobile ? 'bottom' : 'right'}
             sideOffset={4}
           >
             <DropdownMenuLabel className="text-xs text-muted-foreground">
@@ -67,8 +67,8 @@ export function TeamSwitcher() {
                 onClick={async () => {
                   await authClient.organization.setActive({
                     organizationId: org.id,
-                  });
-                  router.push(`/application/${org.id}`);
+                  })
+                  router.push(`/application`)
                 }}
                 className="gap-2 p-2"
               >
@@ -83,5 +83,5 @@ export function TeamSwitcher() {
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
-  );
+  )
 }

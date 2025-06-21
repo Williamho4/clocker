@@ -12,10 +12,10 @@ type RemoveShiftBtnProps = {
 
 export default function RemoveShiftBtn({ shiftData }: RemoveShiftBtnProps) {
   const handleDeleteShift = async () => {
-    const error = await deleteShift(shiftData.id)
+    const error = await deleteShift({ shiftId: shiftData.id })
 
     if (error) {
-      return toast('Could not delete shift, please try again')
+      return toast(error.message)
     }
 
     toast.success(`${shiftData.member.user.firstName}'s Shift deleted`)

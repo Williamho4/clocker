@@ -17,11 +17,7 @@ import UserImage from './user-image'
 import CheckInBtn from './check-in-btn'
 import { MemberWithUser } from '@/lib/prisma/member/select'
 
-type CheckInSearchProps = {
-  orgId: string
-}
-
-export default function CheckInSearch({ orgId }: CheckInSearchProps) {
+export default function CheckInSearch() {
   const [query, setQuery] = useState('')
   const [employees, setEmployees] = useState<MemberWithUser[] | []>([])
   const [searchValue] = useDebounce(query, 400)
@@ -36,8 +32,13 @@ export default function CheckInSearch({ orgId }: CheckInSearchProps) {
 
   useEffect(() => {
     async function getEmployees() {
-      const employees = await searchOrgMember(orgId, searchValue)
-      setEmployees(employees)
+      const res = await searchOrgMember({
+        employeeName: searchValue,
+      })
+
+      if (res.data) {
+        setEmployees(res.data)
+      }
     }
 
     if (searchValue.trim() !== '') {
@@ -45,7 +46,7 @@ export default function CheckInSearch({ orgId }: CheckInSearchProps) {
     } else {
       setEmployees([])
     }
-  }, [searchValue, orgId])
+  }, [searchValue])
 
   return (
     <Card className="">
@@ -98,7 +99,6 @@ export default function CheckInSearch({ orgId }: CheckInSearchProps) {
             </div>
             <CheckInBtn
               resetSearch={resetSearch}
-              orgId={orgId}
               memberId={selectedEmployee.id}
             />
           </>

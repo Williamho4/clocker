@@ -27,13 +27,9 @@ type AttendanceWithMemberAndUserAndShift = Attendance & {
 
 type CheckInCardProps = {
   attendance: AttendanceWithMemberAndUserAndShift
-  orgId: string
 }
 
-export default function AttendanceCard({
-  attendance,
-  orgId,
-}: CheckInCardProps) {
+export default function AttendanceCard({ attendance }: CheckInCardProps) {
   const { user } = attendance.member
 
   const totalMinutes = differenceInMinutes(new Date(), attendance.checkInTime!)
@@ -82,17 +78,11 @@ export default function AttendanceCard({
       </CardContent>
       <CardFooter className="w-full flex justify-between">
         {attendance.breaks.length === 0 ? (
-          <StartBreakBtn
-            attendanceId={attendance.id}
-            orgId={attendance.organizationId}
-          />
+          <StartBreakBtn attendanceId={attendance.id} />
         ) : (
-          <StopBreakBtn
-            breakId={attendance.breaks[0].id}
-            orgId={attendance.organizationId}
-          />
+          <StopBreakBtn breakId={attendance.breaks[0].id} />
         )}
-        <CheckOutBtn attendanceId={attendance.id} orgId={orgId} />
+        <CheckOutBtn attendanceId={attendance.id} />
       </CardFooter>
     </Card>
   )

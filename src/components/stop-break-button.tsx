@@ -6,12 +6,11 @@ import { toast } from 'sonner'
 
 type StartBreakBtnProps = {
   breakId: string
-  orgId: string
 }
 
-export default function StopBreakBtn({ breakId, orgId }: StartBreakBtnProps) {
+export default function StopBreakBtn({ breakId }: StartBreakBtnProps) {
   async function handleStopBreak() {
-    const error = await stopBreak(breakId, orgId)
+    const error = await stopBreak({ breakId })
 
     if (error) {
       toast.error(error.message)

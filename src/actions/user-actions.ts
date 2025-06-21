@@ -2,22 +2,34 @@
 
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/db'
+import { invitationSelect } from '@/lib/prisma/Invitation/select'
 import { organizationWithMemberRoleSelect } from '@/lib/prisma/organization/select'
-import { Shift } from '@prisma/client'
-import { Member } from 'better-auth/plugins'
+import { getActiveMember } from '@/lib/server-utils'
+import {
+  checkIfUserExistsSchema,
+  createShiftChangeRequestSchema,
+  getAllUserInvitesSchema,
+} from '@/lib/validations/user'
 import { endOfWeek, startOfDay, startOfWeek, subDays } from 'date-fns'
-import { connect } from 'http2'
 import { headers } from 'next/headers'
 
-export const checkIfUserExists = async (email: string) => {
+export const checkIfUserExists = async (data: unknown) => {
+  const validatedData = checkIfUserExistsSchema.safeParse(data)
+
+  if (!validatedData.success) {
+    return { success: false, message: 'Invalid input. Please try again.' }
+  }
+
+  const { email } = validatedData.data
+
   const userExists = await prisma.user.findUnique({
     where: { email: email },
   })
 
   if (userExists) {
-    return true
+    return { success: true }
   } else {
-    return false
+    return { success: false, message: 'User does not exist' }
   }
 }
 
@@ -48,10 +60,8 @@ export const getAllUsersOrganizations = async () => {
   })
 }
 
-export async function getAllUserShifts(activeMember: Member) {
-  if (!activeMember) {
-    return []
-  }
+export async function getAllUserShifts() {
+  const activeMember = await getActiveMember()
 
   const shifts = await prisma.shift.findMany({
     where: {
@@ -68,17 +78,11 @@ export async function getAllUserShifts(activeMember: Member) {
     },
   })
 
-  return shifts
+  return { success: false, data: shifts }
 }
 
 export async function getTotalHoursWorkedThisMonth() {
-  const activeMember = await auth.api.getActiveMember({
-    headers: await headers(),
-  })
-
-  if (!activeMember) {
-    return null
-  }
+  const activeMember = await getActiveMember()
 
   try {
     const attendances = await prisma.attendance.findMany({
@@ -109,13 +113,7 @@ export async function getTotalHoursWorkedThisMonth() {
 }
 
 export async function getTotalHoursPlannedThisWeek() {
-  const activeMember = await auth.api.getActiveMember({
-    headers: await headers(),
-  })
-
-  if (!activeMember) {
-    return null
-  }
+  const activeMember = await getActiveMember()
 
   try {
     const shifts = await prisma.shift.findMany({
@@ -145,13 +143,7 @@ export async function getTotalHoursPlannedThisWeek() {
 }
 
 export async function getTotalUpcomingShifts() {
-  const activeMember = await auth.api.getActiveMember({
-    headers: await headers(),
-  })
-
-  if (!activeMember) {
-    return null
-  }
+  const activeMember = await getActiveMember()
 
   try {
     const shifts = await prisma.shift.count({
@@ -172,17 +164,33 @@ export async function getTotalUpcomingShifts() {
   }
 }
 
-export async function createShiftChangeRequest(
-  colleagueId: Member['id'],
-  shiftId: Shift['id']
-) {
-  const activeMember = await auth.api.getActiveMember({
-    headers: await headers(),
+export const getAllUserInvites = async (data: unknown) => {
+  const validatedData = getAllUserInvitesSchema.safeParse(data)
+
+  if (!validatedData.success) {
+    return { success: false, message: 'Invalid input. Please try again.' }
+  }
+
+  const { email } = validatedData.data
+
+  const invites = await prisma.invitation.findMany({
+    where: { email },
+    select: invitationSelect,
   })
 
-  if (!activeMember) {
-    return
+  return { success: false, data: invites }
+}
+
+export async function createShiftChangeRequest(data: unknown) {
+  const validatedData = createShiftChangeRequestSchema.safeParse(data)
+
+  if (!validatedData.success) {
+    return { message: 'Invalid input. Please try again.' }
   }
+
+  const { colleagueId, shiftId } = validatedData.data
+
+  const activeMember = await getActiveMember()
 
   try {
     const shiftToGetChanged = await prisma.shift.findUnique({

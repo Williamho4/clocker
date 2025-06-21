@@ -16,14 +16,12 @@ type ScheduleMakerProps = {
   schedules: ScheduleWithShifts[]
   week: number
   year: number
-  orgId: string
 }
 
 export default async function Schedule({
   schedules,
   week,
   year,
-  orgId,
 }: ScheduleMakerProps) {
   const selectedDate = await weekToDates(week, year)
   const weekStart = startOfWeek(selectedDate[0], { weekStartsOn: 1 })
@@ -63,7 +61,7 @@ export default async function Schedule({
                       todaysDate={todaysDate}
                     />
                   </CardTitle>
-                  <AddShiftBtn orgId={orgId} selectedDay={day.date} />
+                  <AddShiftBtn selectedDay={day.date} />
                 </CardHeader>
                 <CardContent className="flex flex-col">
                   {scheduleForDay &&

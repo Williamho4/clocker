@@ -26,7 +26,6 @@ import { NavUser } from './nav-user'
 import { getISOWeek, getISOWeekYear } from 'date-fns'
 
 export function AppSidebar() {
-  const { data: activeOrganization } = authClient.useActiveOrganization()
   const activeMember = authClient.useActiveMember()
   const currentDate = new Date()
   const weekNumber = getISOWeek(currentDate)
@@ -48,23 +47,23 @@ export function AppSidebar() {
   const adminItems = [
     {
       title: 'Company',
-      url: `/application/${activeOrganization?.id}/admin`,
+      url: `/application/admin`,
       icon: Building2,
     },
 
     {
       title: 'Scheduler',
-      url: `/application/${activeOrganization?.id}/scheduler?week=${weekNumber}&year=${year}`,
+      url: `/application/scheduler?week=${weekNumber}&year=${year}`,
       icon: Calendar,
     },
     {
       title: 'Check-In',
-      url: `/application/${activeOrganization?.id}/check-in`,
+      url: `/application/check-in`,
       icon: Clock9,
     },
     {
       title: 'Tips',
-      url: `/application/${activeOrganization?.id}/tips`,
+      url: `/application/tips`,
       icon: DollarSign,
     },
   ]

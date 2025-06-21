@@ -1,4 +1,3 @@
-import { getAllUserInvites } from '@/actions/actions'
 import { Session } from '@/lib/auth-types'
 import InviteCard from './invite-card'
 import {
@@ -7,15 +6,20 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { getAllUserInvites } from '@/actions/user-actions'
 
 type InviteListProps = {
   session: Session
 }
 
 export default async function InviteList({ session }: InviteListProps) {
-  const invitations = await getAllUserInvites(session.user.email)
+  const invitations = await getAllUserInvites({ email: session.user.email })
 
-  const filteredInvitations = invitations.filter(
+  if (!invitations.data) {
+    return <p>Could not load invitaions</p>
+  }
+
+  const filteredInvitations = invitations.data.filter(
     (invitation) => invitation.status === 'pending'
   )
 

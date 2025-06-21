@@ -21,6 +21,8 @@ export default function InviteCard({ invitation }: InvitationCardProps) {
     await authClient.organization.acceptInvitation({
       invitationId: invitation.id,
     })
+
+    window.location.reload()
   }
 
   return (

@@ -1,5 +1,3 @@
-import { Shift } from '@prisma/client'
-
 export type signUpPayload = {
   email: string
   name: string

@@ -15,10 +15,9 @@ import { useState } from 'react'
 
 type AddShiftBtnProps = {
   selectedDay: Date
-  orgId: string
 }
 
-export default function AddShiftBtn({ selectedDay, orgId }: AddShiftBtnProps) {
+export default function AddShiftBtn({ selectedDay }: AddShiftBtnProps) {
   const [isFormOpen, setIsFormOpen] = useState(false)
 
   return (
@@ -35,11 +34,7 @@ export default function AddShiftBtn({ selectedDay, orgId }: AddShiftBtnProps) {
           <DialogDescription className="mb-5">
             Schedule a shift for an employee. All fields are required.
           </DialogDescription>
-          <ShiftForm
-            orgId={orgId}
-            selectedDay={selectedDay}
-            setIsFormOpen={setIsFormOpen}
-          />
+          <ShiftForm selectedDay={selectedDay} setIsFormOpen={setIsFormOpen} />
         </DialogHeader>
       </DialogContent>
     </Dialog>

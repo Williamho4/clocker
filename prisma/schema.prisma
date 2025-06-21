@@ -215,7 +215,7 @@ model Schedule {
 
 model ShiftRequest {
   id      String @id @default(cuid())
-  shift   Shift  @relation(fields: [shiftId], references: [id])
+  shift   Shift  @relation(fields: [shiftId], references: [id], onDelete: Cascade)
   shiftId String
 
   requester         Member @relation("Requester", fields: [requesterMemberId], references: [id])

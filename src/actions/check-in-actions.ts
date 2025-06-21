@@ -1,22 +1,29 @@
 'use server'
 
-import { auth } from '@/lib/auth'
 import prisma from '@/lib/db'
-import {
-  MemberWithUser,
-  memberWithUserSelect,
-} from '@/lib/prisma/member/select'
+import { memberWithUserSelect } from '@/lib/prisma/member/select'
 import {
   checkIfCheckedInAlready,
   checkIfOnBreak,
   checkIfShiftExistForAttendance,
   createBreak,
   editBreakToDone,
+  getActiveMember,
 } from '@/lib/server-utils'
+import {
+  checkInEmployeeSchema,
+  checkOutEmployeeSchema,
+  searchOrgMemberSchema,
+  startBreakSchema,
+  stopBreakSchema,
+} from '@/lib/validations/check-in'
 import { revalidatePath } from 'next/cache'
-import { headers } from 'next/headers'
 
-export const getAllActiveAttendances = async (organizationId: string) => {
+export const getAllActiveAttendances = async () => {
+  const activeMember = await getActiveMember()
+
+  const { organizationId } = activeMember
+
   try {
     const attendances = await prisma.attendance.findMany({
       where: {
@@ -41,14 +48,21 @@ export const getAllActiveAttendances = async (organizationId: string) => {
       },
     })
 
-    return attendances
-  } catch (error) {
-    console.log(error)
-    return []
+    return { success: true, data: attendances }
+  } catch {
+    return { success: false, message: 'Something went wrong, try again' }
   }
 }
 
-export const checkOutEmployee = async (attendanceId: string, orgId: string) => {
+export const checkOutEmployee = async (data: unknown) => {
+  const validatedData = checkOutEmployeeSchema.safeParse(data)
+
+  if (!validatedData.success) {
+    return { message: 'Invalid input. Please try again.' }
+  }
+
+  const { attendanceId } = validatedData.data
+
   const onBreak = await checkIfOnBreak(attendanceId)
 
   if (onBreak) {
@@ -69,22 +83,26 @@ export const checkOutEmployee = async (attendanceId: string, orgId: string) => {
         checkOutTime: new Date(),
       },
     })
-    revalidatePath(`/app/${orgId}/check-in`)
+    revalidatePath(`/application/check-in`)
   } catch {
     return { message: 'Could not check out' }
   }
 }
 
-export const checkInEmployee = async (orgId: string, memberId: string) => {
-  const activeMember = await auth.api.getActiveMember({
-    headers: await headers(),
-  })
+export const checkInEmployee = async (data: unknown) => {
+  const validatedData = checkInEmployeeSchema.safeParse(data)
 
-  if (activeMember?.organizationId !== orgId) {
-    return { message: 'Could not check in' }
+  if (!validatedData.success) {
+    return { message: 'Invalid input. Please try again.' }
   }
 
-  const checkedIn = await checkIfCheckedInAlready(orgId, memberId)
+  const { memberId } = validatedData.data
+
+  const activeMember = await getActiveMember()
+
+  const { organizationId } = activeMember
+
+  const checkedIn = await checkIfCheckedInAlready(organizationId, memberId)
 
   if (checkedIn) {
     return { message: 'Already checked in' }
@@ -98,7 +116,7 @@ export const checkInEmployee = async (orgId: string, memberId: string) => {
         status: 'CHECKED_IN',
         checkInTime: new Date(),
         organization: {
-          connect: { id: orgId },
+          connect: { id: organizationId },
         },
         member: {
           connect: { id: memberId },
@@ -110,29 +128,34 @@ export const checkInEmployee = async (orgId: string, memberId: string) => {
         }),
       },
     })
-    revalidatePath(`/app/${orgId}/check-in`)
+    revalidatePath(`/application/check-in`)
   } catch {
     return { message: 'Could not check in' }
   }
 }
 
-export const searchOrgMember = async (
-  orgId: string,
-  employeeName: string
-): Promise<MemberWithUser[]> => {
-  const activeMember = await auth.api.getActiveMember({
-    headers: await headers(),
-  })
+//need validation
+export const searchOrgMember = async (data: unknown) => {
+  const validatedData = searchOrgMemberSchema.safeParse(data)
 
-  if (activeMember?.organizationId !== orgId) {
-    console.error('Not authorized')
-    return []
+  if (!validatedData.success) {
+    return { success: false, message: 'Invalid Input, try again' }
+  }
+
+  const { employeeName } = validatedData.data
+
+  const activeMember = await getActiveMember()
+
+  const { organizationId } = activeMember
+
+  if (activeMember?.organizationId !== organizationId) {
+    return { success: false, message: 'Not authorized' }
   }
 
   try {
     const members = await prisma.member.findMany({
       where: {
-        organizationId: orgId,
+        organizationId,
         user: {
           name: {
             contains: employeeName,
@@ -143,14 +166,21 @@ export const searchOrgMember = async (
       select: memberWithUserSelect,
     })
 
-    return members
-  } catch (error) {
-    console.error('Failed to search members:', error)
-    return []
+    return { success: true, data: members }
+  } catch {
+    return { success: false, message: 'Something went wrong please try again' }
   }
 }
 
-export const startBreak = async (attendanceId: string, orgId: string) => {
+export const startBreak = async (data: unknown) => {
+  const validatedData = startBreakSchema.safeParse(data)
+
+  if (!validatedData.success) {
+    return { message: 'Invalid input. Please try again.' }
+  }
+
+  const { attendanceId } = validatedData.data
+
   const alreadyOnBreak = await checkIfOnBreak(attendanceId)
 
   if (alreadyOnBreak) {
@@ -163,15 +193,23 @@ export const startBreak = async (attendanceId: string, orgId: string) => {
     return { message: 'Could not start break' }
   }
 
-  revalidatePath(`/app/${orgId}/check-in`)
+  revalidatePath(`/application/check-in`)
 }
 
-export const stopBreak = async (breakId: string, orgId: string) => {
+export const stopBreak = async (data: unknown) => {
+  const validatedData = stopBreakSchema.safeParse(data)
+
+  if (!validatedData.success) {
+    return { message: 'Invalid input. Please try again.' }
+  }
+
+  const { breakId } = validatedData.data
+
   const pause = await editBreakToDone(breakId)
 
   if (!pause) {
     return { message: 'Could not stop break' }
   }
 
-  revalidatePath(`/app/${orgId}/check-in`)
+  revalidatePath(`/application/check-in`)
 }

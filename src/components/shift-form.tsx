@@ -18,13 +18,11 @@ import { authClient } from '@/lib/auth-client'
 type ShiftFormProps = {
   selectedDay: Date
   setIsFormOpen: Dispatch<SetStateAction<boolean>>
-  orgId: string
 }
 
 export default function ShiftForm({
   selectedDay,
   setIsFormOpen,
-  orgId,
 }: ShiftFormProps) {
   const { data: organization } = authClient.useActiveOrganization()
 
@@ -40,12 +38,11 @@ export default function ShiftForm({
     const formattedStartTime = combineDateAndTime(selectedDay, startTime)
     const formattedEndTime = combineDateAndTime(selectedDay, endTime)
 
-    const error = await createShift(
-      formattedStartTime,
-      formattedEndTime,
-      memberId,
-      orgId
-    )
+    const error = await createShift({
+      shiftStartDate: formattedStartTime,
+      shiftEndDate: formattedEndTime,
+      employeeId: memberId,
+    })
 
     if (error) {
       toast.error(error.message)

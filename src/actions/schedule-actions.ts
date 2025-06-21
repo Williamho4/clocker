@@ -1,11 +1,14 @@
 'use server'
 
-import { auth } from '@/lib/auth'
 import prisma from '@/lib/db'
 import { scheduleSelect } from '@/lib/prisma/schedule/select'
+import { getActiveMember } from '@/lib/server-utils'
 import { weekToDates } from '@/lib/utils'
-import { Organization, User } from '@prisma/client'
-import { Member } from 'better-auth/plugins'
+import {
+  createShiftSchema,
+  deleteShiftSchema,
+  getSchedulesForWeekSchema,
+} from '@/lib/validations/schedule'
 import {
   addDays,
   endOfDay,
@@ -14,19 +17,21 @@ import {
   startOfYear,
 } from 'date-fns'
 import { revalidatePath } from 'next/cache'
-import { headers } from 'next/headers'
 
-export const createShift = async (
-  shiftStartDate: Date,
-  shiftEndDate: Date,
-  employeeId: Member['id'],
-  organizationId: Organization['id']
-) => {
-  const activeMember = await auth.api.getActiveMember({
-    headers: await headers(),
-  })
+export const createShift = async (data: unknown) => {
+  const validatedData = createShiftSchema.safeParse(data)
 
-  if (!activeMember || activeMember.role === 'member') {
+  if (!validatedData.success) {
+    return { message: 'Invalid input. Please try again.' }
+  }
+
+  const { shiftStartDate, shiftEndDate, employeeId } = validatedData.data
+
+  const activeMember = await getActiveMember()
+
+  const { organizationId } = activeMember
+
+  if (activeMember.role === 'member') {
     return {
       message: 'Not authorized',
     }
@@ -114,7 +119,7 @@ export const createShift = async (
       },
     })
 
-    revalidatePath(`/app/${organizationId}/scheduler`)
+    revalidatePath(`/application/scheduler`)
   } catch {
     return {
       message: 'Something went wrong please try again',
@@ -122,15 +127,16 @@ export const createShift = async (
   }
 }
 
-export const deleteShift = async (shiftId: string) => {
-  const activeMember = await auth.api.getActiveMember({
-    headers: await headers(),
-  })
+export const deleteShift = async (data: unknown) => {
+  const validatedData = deleteShiftSchema.safeParse(data)
 
-  //change this
-  const organization = await auth.api.getFullOrganization({
-    headers: await headers(),
-  })
+  if (!validatedData.success) {
+    return { message: 'Invalid input, Please try again.' }
+  }
+
+  const { shiftId } = validatedData.data
+
+  const activeMember = await getActiveMember()
 
   if (!activeMember || activeMember.role === 'member') {
     return {
@@ -150,14 +156,22 @@ export const deleteShift = async (shiftId: string) => {
     }
   }
 
-  revalidatePath(`/app/${organization?.id}/scheduler`)
+  revalidatePath(`/application/scheduler`)
 }
 
-export const getSchedulesForWeek = async (
-  week: number,
-  year: number,
-  orgId: string
-) => {
+export const getSchedulesForWeek = async (data: unknown) => {
+  const validatedData = getSchedulesForWeekSchema.safeParse(data)
+
+  if (!validatedData.success) {
+    return { success: false, message: 'Invalid input, try again' }
+  }
+
+  const { week, year } = validatedData.data
+
+  const activeMember = await getActiveMember()
+
+  const { organizationId } = activeMember
+
   const dates = await weekToDates(week, year)
 
   const schedules = await prisma.schedule.findMany({
@@ -166,10 +180,10 @@ export const getSchedulesForWeek = async (
         gte: dates[0],
         lte: dates[1],
       },
-      organizationId: orgId,
+      organizationId: organizationId,
     },
     include: scheduleSelect,
   })
 
-  return schedules
+  return { success: true, data: schedules }
 }

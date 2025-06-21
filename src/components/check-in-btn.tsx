@@ -4,19 +4,14 @@ import { toast } from 'sonner'
 import { format } from 'date-fns'
 
 type CheckInBtnProps = {
-  orgId: string
   memberId: string
   resetSearch: () => void
 }
 
-export default function CheckInBtn({
-  orgId,
-  memberId,
-  resetSearch,
-}: CheckInBtnProps) {
+export default function CheckInBtn({ memberId, resetSearch }: CheckInBtnProps) {
   const handleCheckIn = async ({}) => {
     const checkInTime = format(new Date(), 'HH:mm')
-    const error = await checkInEmployee(orgId, memberId)
+    const error = await checkInEmployee({ memberId })
 
     if (error) {
       toast.error(error.message)

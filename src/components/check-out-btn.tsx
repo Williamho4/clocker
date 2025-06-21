@@ -6,12 +6,13 @@ import { toast } from 'sonner'
 
 type CheckOutBtnProps = {
   attendanceId: string
-  orgId: string
 }
 
-export default function CheckOutBtn({ attendanceId, orgId }: CheckOutBtnProps) {
+export default function CheckOutBtn({ attendanceId }: CheckOutBtnProps) {
   const handleCheckout = async () => {
-    const error = await checkOutEmployee(attendanceId, orgId)
+    const error = await checkOutEmployee({
+      attendanceId,
+    })
 
     if (error) {
       toast.error('Could not check out')

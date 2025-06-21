@@ -20,16 +20,24 @@ export default async function Page() {
     redirect('/application/start')
   }
 
-  const shifts = await getAllUserShifts(activeMember)
-  const colleagues = await getAllColleagues()
+  const { data: shifts } = await getAllUserShifts()
+  const { data: colleagues } = await getAllColleagues()
 
   return (
     <main className="w-full 2xl:w-[90%] xl:m-auto h-full p-4 space-y-6 overflow-y-auto scrollbar-clean">
       <ShiftStats />
       <div className="grid gap-5 grid-cols-1 md:grid-cols-2 lg:grid-cols-3  ">
-        {shifts.map((shift) => (
-          <ShiftCard key={shift.id} shiftData={shift} colleagues={colleagues} />
-        ))}
+        {shifts && colleagues ? (
+          shifts.map((shift) => (
+            <ShiftCard
+              key={shift.id}
+              shiftData={shift}
+              colleagues={colleagues}
+            />
+          ))
+        ) : (
+          <p>Could not load shifts</p>
+        )}
       </div>
     </main>
   )

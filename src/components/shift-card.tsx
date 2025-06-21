@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/card'
 import { getDateDiffrenceInHours } from '@/lib/utils'
 import { Shift } from '@prisma/client'
-import { format } from 'date-fns'
+import { format, isSameDay, startOfDay } from 'date-fns'
 import { Calendar, Clock, User } from 'lucide-react'
 import { Badge } from './ui/badge'
 import { RequestShiftChangeBtn } from './request-shift-change-btn'
@@ -29,12 +29,29 @@ export default function ShiftCard({ shiftData, colleagues }: ShiftCardProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>KFC</CardTitle>
-        <CardDescription>Card Description</CardDescription>
+        <CardTitle>Shift</CardTitle>
+
         <CardAction>
-          <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-            Upcoming
-          </Badge>
+          {shiftData.startTime > startOfDay(new Date()) &&
+            !isSameDay(shiftData.startTime, new Date()) && (
+              <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                Upcoming
+              </Badge>
+            )}
+          {shiftData.startTime < startOfDay(new Date()) &&
+            !isSameDay(shiftData.startTime, new Date()) && (
+              <Badge
+                variant="secondary"
+                className="bg-green-100 text-green-800"
+              >
+                Done
+              </Badge>
+            )}
+          {isSameDay(shiftData.startTime, new Date()) && (
+            <Badge variant="secondary" className="bg-red-100 text-red-800">
+              Today
+            </Badge>
+          )}
         </CardAction>
       </CardHeader>
       <CardContent className="space-y-2">
