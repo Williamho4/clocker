@@ -29,10 +29,10 @@ export default async function Schedule({ week, year }: ScheduleMakerProps) {
   const weekDays = Array.from({ length: 7 }, (_, i) => {
     const date = addDays(weekStart, i)
     return {
-      date: toZonedTime(date, DISPLAY_TIMEZONE), // raw Date object
-      label: formatToTimeZoneAndFormat(date, 'MMMM d'), // "June 12"
-      dayName: formatToTimeZoneAndFormat(date, 'EEEE'), // "Thursday"
-      iso: formatToTimeZoneAndFormat(date, 'yyyy-MM-dd'), // "2025-06-12"
+      date, // raw Date object
+      label: format(date, 'MMMM d'), // "June 12"
+      dayName: format(date, 'EEEE'), // "Thursday"
+      iso: format(date, 'yyyy-MM-dd'), // "2025-06-12"
     }
   })
 
@@ -77,11 +77,7 @@ export default async function Schedule({ week, year }: ScheduleMakerProps) {
                   <CardContent className="flex flex-col">
                     {scheduleForDay &&
                       scheduleForDay.shifts
-                        .filter(
-                          (shift) =>
-                            toZonedTime(shift.startTime, DISPLAY_TIMEZONE) !==
-                            null
-                        )
+                        .filter((shift) => shift.startTime !== null)
                         .map((shift) => (
                           <Shift key={shift.id} shiftData={shift} />
                         ))}
