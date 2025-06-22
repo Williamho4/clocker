@@ -39,7 +39,7 @@ export const createShift = async (data: unknown) => {
   })
 
   if (!checkIfSchedulesAlreadyCreated) {
-    prisma.schedule.create({
+    await prisma.schedule.create({
       data: {
         date: startOfDay(shiftStartDate),
         organizationId,
