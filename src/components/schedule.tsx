@@ -13,6 +13,8 @@ import {
 import Shift from './shift'
 import { ScheduleWithShifts } from '@/lib/prisma/schedule/select'
 import { getSchedulesForWeek } from '@/actions/schedule-actions'
+import { toZonedTime } from 'date-fns-tz'
+import { DISPLAY_TIMEZONE } from '@/lib/constants'
 
 type ScheduleMakerProps = {
   week: number
@@ -27,7 +29,7 @@ export default async function Schedule({ week, year }: ScheduleMakerProps) {
   const weekDays = Array.from({ length: 7 }, (_, i) => {
     const date = addDays(weekStart, i)
     return {
-      date, // raw Date object
+      date: toZonedTime(date, DISPLAY_TIMEZONE), // raw Date object
       label: formatToTimeZoneAndFormat(date, 'MMMM d'), // "June 12"
       dayName: formatToTimeZoneAndFormat(date, 'EEEE'), // "Thursday"
       iso: formatToTimeZoneAndFormat(date, 'yyyy-MM-dd'), // "2025-06-12"
