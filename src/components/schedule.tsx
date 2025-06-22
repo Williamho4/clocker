@@ -1,7 +1,7 @@
 import { User } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import AddShiftBtn from './add-shift-btn'
-import { addDays, isSameDay, startOfDay, startOfWeek } from 'date-fns'
+import { addDays, format, startOfDay, startOfWeek } from 'date-fns'
 import { Weekday } from '@/lib/types'
 import {
   cn,
@@ -48,7 +48,13 @@ export default async function Schedule({ week, year }: ScheduleMakerProps) {
           {schedules ? (
             weekDays.map((day) => {
               const scheduleForDay: ScheduleWithShifts | undefined =
-                schedules.find((schedule) => isSameDay(schedule.date, day.date))
+                schedules.find(
+                  (schedule) =>
+                    format(
+                      toZonedTime(schedule.date, DISPLAY_TIMEZONE),
+                      'yyyy-MM-dd'
+                    ) === format(day.date, 'yyyy-MM-dd')
+                )
 
               return (
                 <Card
