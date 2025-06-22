@@ -26,12 +26,12 @@ export default async function Schedule({ week, year }: ScheduleMakerProps) {
   const todaysDate = startOfDay(new Date())
 
   const weekDays = Array.from({ length: 7 }, (_, i) => {
-    const date = startOfDay(addDays(weekStart, i))
+    const date = addDays(weekStart, i)
     return {
-      date, // raw Date object
-      label: format(date, 'MMMM d'), // "June 12"
-      dayName: format(date, 'EEEE'), // "Thursday"
-      iso: format(date, 'yyyy-MM-dd'), // "2025-06-12"
+      date: toZonedTime(startOfDay(date), DISPLAY_TIMEZONE),
+      label: format(date, 'MMMM d'),
+      dayName: format(date, 'EEEE'),
+      iso: format(date, 'yyyy-MM-dd'),
     }
   })
 
@@ -52,7 +52,11 @@ export default async function Schedule({ week, year }: ScheduleMakerProps) {
                     format(
                       toZonedTime(schedule.date, DISPLAY_TIMEZONE),
                       'yyyy-MM-dd'
-                    ) === format(day.date, 'yyyy-MM-dd')
+                    ) ===
+                    format(
+                      toZonedTime(day.date, DISPLAY_TIMEZONE),
+                      'yyyy-MM-dd'
+                    )
                 )
 
               return (
