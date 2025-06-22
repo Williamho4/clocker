@@ -7,7 +7,6 @@ import {
   cn,
   countTotalHoursForDay,
   countTotalWorkersForDay,
-  formatToTimeZoneAndFormat,
   weekToDates,
 } from '@/lib/utils'
 import Shift from './shift'
