@@ -39,32 +39,18 @@ export const createShift = async (data: unknown) => {
 
   const checkIfSchedulesAlreadyCreated = await prisma.schedule.findFirst({
     where: {
-      date: {
-        gte: startOfDay(shiftStartDate),
-        lte: endOfDay(shiftEndDate),
-      },
+      date: startOfDay(shiftStartDate),
       organizationId,
     },
   })
 
   if (!checkIfSchedulesAlreadyCreated) {
-    const yearStartDate = startOfYear(shiftStartDate)
-    const daysInYear = isLeapYear(yearStartDate) ? 366 : 365
-
-    const allDays = Array.from({ length: daysInYear }, (_, i) =>
-      addDays(yearStartDate, i)
-    )
-
-    await Promise.all(
-      allDays.map((date) =>
-        prisma.schedule.create({
-          data: {
-            date,
-            organizationId,
-          },
-        })
-      )
-    )
+    prisma.schedule.create({
+      data: {
+        date: startOfDay(shiftStartDate),
+        organizationId,
+      },
+    })
   }
 
   const schedule = await prisma.schedule.findUnique({
