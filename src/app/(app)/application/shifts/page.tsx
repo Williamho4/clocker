@@ -1,27 +1,32 @@
-import { getAllColleagues } from '@/actions/organization-actions'
+import { getAllColleagues } from "@/actions/organization-actions";
+import { getUpcomingShiftsForTimeSpan } from "@/actions/shifts";
 import {
-  getAllUserShifts,
   getTotalHoursPlannedThisWeek,
-  getTotalHoursWorkedThisMonth,
+  getTotalHoursWorkedInTimeSpan,
   getTotalUpcomingShifts,
-} from '@/actions/user-actions'
-import ShiftCard from '@/components/shift-card'
-import { auth } from '@/lib/auth'
-import { Calendar, Clock, User } from 'lucide-react'
-import { headers } from 'next/headers'
-import { redirect } from 'next/navigation'
+} from "@/actions/user-actions";
+import ShiftCard from "@/components/shift-card";
+import { auth } from "@/lib/auth";
+import { endOfMonth, startOfMonth } from "date-fns";
+import { Calendar, Clock, User } from "lucide-react";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 
 export default async function Page() {
   const activeMember = await auth.api.getActiveMember({
     headers: await headers(),
-  })
+  });
 
   if (!activeMember) {
-    redirect('/application/start')
+    redirect("/application/start");
   }
 
-  const { data: shifts } = await getAllUserShifts()
-  const { data: colleagues } = await getAllColleagues()
+  //Get all shifts this month
+  const { data: shifts } = await getUpcomingShiftsForTimeSpan({
+    startDate: startOfMonth(new Date()),
+    endDate: endOfMonth(new Date()),
+  });
+  const { data: colleagues } = await getAllColleagues();
 
   return (
     <main className="w-full 2xl:w-[90%] xl:m-auto h-full p-4 space-y-6 overflow-y-auto scrollbar-clean">
@@ -40,13 +45,16 @@ export default async function Page() {
         )}
       </div>
     </main>
-  )
+  );
 }
 
 const ShiftStats = async () => {
-  const totalHoursScheduled = await getTotalHoursPlannedThisWeek()
-  const totalUpcomingShifts = await getTotalUpcomingShifts()
-  const totalHoursWorkedThisMonth = await getTotalHoursWorkedThisMonth()
+  const totalHoursScheduled = await getTotalHoursPlannedThisWeek();
+  const totalUpcomingShifts = await getTotalUpcomingShifts();
+  const totalHoursWorkedThisMonth = await getTotalHoursWorkedInTimeSpan({
+    startDate: startOfMonth(new Date()),
+    endDate: endOfMonth(new Date()),
+  });
 
   return (
     <div className="grid gap-5 grid-cols-1 md:grid-cols-3 ">
@@ -57,7 +65,7 @@ const ShiftStats = async () => {
               Total Hours This Week
             </p>
             <p className="text-3xl font-bold text-blue-900">
-              {totalHoursScheduled ? totalHoursScheduled : '0'}
+              {totalHoursScheduled ? totalHoursScheduled : "0"}
             </p>
             <p className="text-blue-600 text-xs">Hours scheduled</p>
           </div>
@@ -101,5 +109,5 @@ const ShiftStats = async () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};

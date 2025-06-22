@@ -1,106 +1,113 @@
-import { User } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
-import AddShiftBtn from './add-shift-btn'
-import { addDays, format, isSameDay, startOfDay, startOfWeek } from 'date-fns'
-import { Weekday } from '@/lib/types'
+import { User } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import AddShiftBtn from "./add-shift-btn";
+import { addDays, format, isSameDay, startOfDay, startOfWeek } from "date-fns";
+import { Weekday } from "@/lib/types";
 import {
   cn,
   countTotalHoursForDay,
   countTotalWorkersForDay,
   weekToDates,
-} from '@/lib/utils'
-import Shift from './shift'
-import { ScheduleWithShifts } from '@/lib/prisma/schedule/select'
+} from "@/lib/utils";
+import Shift from "./shift";
+import { ScheduleWithShifts } from "@/lib/prisma/schedule/select";
+import { getSchedulesForWeek } from "@/actions/schedule-actions";
 
 type ScheduleMakerProps = {
-  schedules: ScheduleWithShifts[]
-  week: number
-  year: number
-}
+  week: number;
+  year: number;
+};
 
-export default async function Schedule({
-  schedules,
-  week,
-  year,
-}: ScheduleMakerProps) {
-  const selectedDate = await weekToDates(week, year)
-  const weekStart = startOfWeek(selectedDate[0], { weekStartsOn: 1 })
-  const todaysDate = startOfDay(new Date())
+export default async function Schedule({ week, year }: ScheduleMakerProps) {
+  const selectedDate = await weekToDates(week, year);
+  const weekStart = startOfWeek(selectedDate[0], { weekStartsOn: 1 });
+  const todaysDate = startOfDay(new Date());
 
   const weekDays = Array.from({ length: 7 }, (_, i) => {
-    const date = addDays(weekStart, i)
+    const date = addDays(weekStart, i);
     return {
       date, // raw Date object
-      label: format(date, 'MMMM d'), // "June 12"
-      dayName: format(date, 'EEEE'), // "Thursday"
-      iso: format(date, 'yyyy-MM-dd'), // "2025-06-12"
-    }
-  })
+      label: format(date, "MMMM d"), // "June 12"
+      dayName: format(date, "EEEE"), // "Thursday"
+      iso: format(date, "yyyy-MM-dd"), // "2025-06-12"
+    };
+  });
+
+  const { data: schedules } = await getSchedulesForWeek({
+    week,
+    year,
+  });
 
   return (
     <>
       <section className="space-y-5">
         <div className="grid grid-cols-1 s:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 gap-3">
-          {weekDays.map((day) => {
-            const scheduleForDay: ScheduleWithShifts | undefined =
-              schedules.find((schedule) => isSameDay(schedule.date, day.date))
+          {schedules ? (
+            weekDays.map((day) => {
+              const scheduleForDay: ScheduleWithShifts | undefined =
+                schedules.find((schedule) =>
+                  isSameDay(schedule.date, day.date)
+                );
 
-            return (
-              <Card
-                key={day.iso}
-                className={cn('min-h-50 lg:min-h-140 shadow-sm', {
-                  'ring-2 ring-blue-400':
-                    todaysDate.getTime() === day.date.getTime(),
-                })}
-              >
-                <CardHeader>
-                  <CardTitle>
-                    <ShiftStats
-                      schedulesForDay={scheduleForDay ? scheduleForDay : null}
-                      day={day}
-                      todaysDate={todaysDate}
-                    />
-                  </CardTitle>
-                  <AddShiftBtn selectedDay={day.date} />
-                </CardHeader>
-                <CardContent className="flex flex-col">
-                  {scheduleForDay &&
-                    scheduleForDay.shifts
-                      .filter((shift) => shift.startTime !== null)
-                      .map((shift) => (
-                        <Shift key={shift.id} shiftData={shift} />
-                      ))}
-                </CardContent>
-              </Card>
-            )
-          })}
+              return (
+                <Card
+                  key={day.iso}
+                  className={cn("min-h-50 lg:min-h-140 shadow-sm", {
+                    "ring-2 ring-blue-400":
+                      todaysDate.getTime() === day.date.getTime(),
+                  })}
+                >
+                  <CardHeader>
+                    <CardTitle>
+                      <ShiftStats
+                        schedulesForDay={scheduleForDay ? scheduleForDay : null}
+                        day={day}
+                        todaysDate={todaysDate}
+                      />
+                    </CardTitle>
+                    <AddShiftBtn selectedDay={day.date} />
+                  </CardHeader>
+                  <CardContent className="flex flex-col">
+                    {scheduleForDay &&
+                      scheduleForDay.shifts
+                        .filter((shift) => shift.startTime !== null)
+                        .map((shift) => (
+                          <Shift key={shift.id} shiftData={shift} />
+                        ))}
+                  </CardContent>
+                </Card>
+              );
+            })
+          ) : (
+            <p>Could not load schedules</p>
+          )}
         </div>
       </section>
     </>
-  )
+  );
 }
 
 type ShiftStatsProps = {
-  day: Weekday
-  todaysDate: Date
-  schedulesForDay: ScheduleWithShifts | null
-}
+  day: Weekday;
+  todaysDate: Date;
+  schedulesForDay: ScheduleWithShifts | null;
+};
 
 const ShiftStats = ({ schedulesForDay, day, todaysDate }: ShiftStatsProps) => {
-  let hours = 0
-  let employess = 0
+  let hours = 0;
+  let employess = 0;
 
   if (schedulesForDay) {
-    hours = countTotalHoursForDay(schedulesForDay)
-    employess = countTotalWorkersForDay(schedulesForDay)
+    hours = countTotalHoursForDay(schedulesForDay);
+    employess = countTotalWorkersForDay(schedulesForDay);
   }
 
   return (
     <div className="space-y-1">
       <div className="flex justify-between">
         <p
-          className={cn('', {
-            'text-blue-500': todaysDate.getTime() === day.date.getTime(),
+          className={cn("", {
+            "text-blue-500": todaysDate.getTime() === day.date.getTime(),
           })}
         >
           {day.dayName}
@@ -113,5 +120,5 @@ const ShiftStats = ({ schedulesForDay, day, todaysDate }: ShiftStatsProps) => {
       <p className="text-sm font-thin">{day.label}</p>
       <p className="text-sm font-light">{hours} Hours</p>
     </div>
-  )
-}
+  );
+};

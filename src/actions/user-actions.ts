@@ -1,45 +1,46 @@
-'use server'
+"use server";
 
-import { auth } from '@/lib/auth'
-import prisma from '@/lib/db'
-import { invitationSelect } from '@/lib/prisma/Invitation/select'
-import { organizationWithMemberRoleSelect } from '@/lib/prisma/organization/select'
-import { getActiveMember } from '@/lib/server-utils'
+import { auth } from "@/lib/auth";
+import prisma from "@/lib/db";
+import { invitationSelect } from "@/lib/prisma/Invitation/select";
+import { organizationWithMemberRoleSelect } from "@/lib/prisma/organization/select";
+import { getActiveMember } from "@/lib/server-utils";
 import {
   checkIfUserExistsSchema,
   createShiftChangeRequestSchema,
   getAllUserInvitesSchema,
-} from '@/lib/validations/user'
-import { endOfWeek, startOfDay, startOfWeek, subDays } from 'date-fns'
-import { headers } from 'next/headers'
+} from "@/lib/validations/user";
+import { endOfWeek, startOfDay, startOfWeek } from "date-fns";
+import { headers } from "next/headers";
+import { getTotalHoursWorkedInTimeSpanSchema } from "../lib/validations/user";
 
 export const checkIfUserExists = async (data: unknown) => {
-  const validatedData = checkIfUserExistsSchema.safeParse(data)
+  const validatedData = checkIfUserExistsSchema.safeParse(data);
 
   if (!validatedData.success) {
-    return { success: false, message: 'Invalid input. Please try again.' }
+    return { success: false, message: "Invalid input. Please try again." };
   }
 
-  const { email } = validatedData.data
+  const { email } = validatedData.data;
 
   const userExists = await prisma.user.findUnique({
     where: { email: email },
-  })
+  });
 
   if (userExists) {
-    return { success: true }
+    return { success: true };
   } else {
-    return { success: false, message: 'User does not exist' }
+    return { success: false, message: "User does not exist" };
   }
-}
+};
 
 export const getAllUsersOrganizations = async () => {
   const session = await auth.api.getSession({
     headers: await headers(),
-  })
+  });
 
   if (!session) {
-    return
+    return;
   }
 
   return await prisma.organization.findMany({
@@ -57,93 +58,80 @@ export const getAllUsersOrganizations = async () => {
         select: organizationWithMemberRoleSelect.members.select,
       },
     },
-  })
-}
+  });
+};
 
-export async function getAllUserShifts() {
-  const activeMember = await getActiveMember()
+export async function getTotalHoursWorkedInTimeSpan(data: unknown) {
+  const activeMember = await getActiveMember();
 
-  const shifts = await prisma.shift.findMany({
-    where: {
-      memberId: activeMember.id,
-      startTime: {
-        gte: subDays(new Date(), 7),
-      },
-      schedule: {
-        organizationId: activeMember.organizationId,
-      },
-    },
-    orderBy: {
-      startTime: 'asc',
-    },
-  })
+  const validatedData = getTotalHoursWorkedInTimeSpanSchema.safeParse(data);
 
-  return { success: false, data: shifts }
-}
+  if (!validatedData.success) {
+    return null;
+  }
 
-export async function getTotalHoursWorkedThisMonth() {
-  const activeMember = await getActiveMember()
+  const { startDate, endDate } = validatedData.data;
 
   try {
     const attendances = await prisma.attendance.findMany({
       where: {
         memberId: activeMember.id,
         checkInTime: {
-          gte: startOfWeek(new Date()),
-          lte: endOfWeek(new Date()),
+          gte: startDate,
+          lte: endDate,
         },
         organizationId: activeMember.organizationId,
       },
-    })
+    });
 
-    let totalMilliseconds = 0
+    let totalMilliseconds = 0;
 
     for (const att of attendances) {
       if (att.checkInTime && att.checkOutTime) {
         totalMilliseconds +=
-          att.checkOutTime.getTime() - att.checkInTime.getTime()
+          att.checkOutTime.getTime() - att.checkInTime.getTime();
       }
     }
 
-    const totalHours = Math.round(totalMilliseconds / (1000 * 60 * 60))
-    return totalHours
+    const totalHours = Math.round(totalMilliseconds / (1000 * 60 * 60));
+    return totalHours;
   } catch {
-    return null
+    return null;
   }
 }
 
 export async function getTotalHoursPlannedThisWeek() {
-  const activeMember = await getActiveMember()
+  const activeMember = await getActiveMember();
 
   try {
     const shifts = await prisma.shift.findMany({
       where: {
         memberId: activeMember.id,
         startTime: {
-          gte: startOfWeek(new Date()),
-          lte: endOfWeek(new Date()),
+          gte: startOfWeek(new Date(), { weekStartsOn: 1 }),
+          lte: endOfWeek(new Date(), { weekStartsOn: 1 }),
         },
         schedule: {
           organizationId: activeMember.organizationId,
         },
       },
-    })
+    });
 
-    let totalMilliseconds = 0
+    let totalMilliseconds = 0;
 
     for (const shift of shifts) {
-      totalMilliseconds += shift.endTime.getTime() - shift.startTime.getTime()
+      totalMilliseconds += shift.endTime.getTime() - shift.startTime.getTime();
     }
 
-    const totalHours = Math.round(totalMilliseconds / (1000 * 60 * 60))
-    return totalHours
+    const totalHours = Math.round(totalMilliseconds / (1000 * 60 * 60));
+    return totalHours;
   } catch {
-    return null
+    return null;
   }
 }
 
 export async function getTotalUpcomingShifts() {
-  const activeMember = await getActiveMember()
+  const activeMember = await getActiveMember();
 
   try {
     const shifts = await prisma.shift.count({
@@ -156,51 +144,51 @@ export async function getTotalUpcomingShifts() {
           organizationId: activeMember.organizationId,
         },
       },
-    })
+    });
 
-    return shifts
+    return shifts;
   } catch {
-    return null
+    return null;
   }
 }
 
 export const getAllUserInvites = async (data: unknown) => {
-  const validatedData = getAllUserInvitesSchema.safeParse(data)
+  const validatedData = getAllUserInvitesSchema.safeParse(data);
 
   if (!validatedData.success) {
-    return { success: false, message: 'Invalid input. Please try again.' }
+    return { success: false, message: "Invalid input. Please try again." };
   }
 
-  const { email } = validatedData.data
+  const { email } = validatedData.data;
 
   const invites = await prisma.invitation.findMany({
     where: { email },
     select: invitationSelect,
-  })
+  });
 
-  return { success: false, data: invites }
-}
+  return { success: false, data: invites };
+};
 
 export async function createShiftChangeRequest(data: unknown) {
-  const validatedData = createShiftChangeRequestSchema.safeParse(data)
+  const validatedData = createShiftChangeRequestSchema.safeParse(data);
 
   if (!validatedData.success) {
-    return { message: 'Invalid input. Please try again.' }
+    return { message: "Invalid input. Please try again." };
   }
 
-  const { colleagueId, shiftId } = validatedData.data
+  const { colleagueId, shiftId } = validatedData.data;
 
-  const activeMember = await getActiveMember()
+  const activeMember = await getActiveMember();
 
   try {
     const shiftToGetChanged = await prisma.shift.findUnique({
       where: {
         id: shiftId,
       },
-    })
+    });
 
     if (!shiftToGetChanged) {
-      throw new Error('Shift not found')
+      throw new Error("Shift not found");
     }
 
     const collegueIsNotAvailable = await prisma.shift.findFirst({
@@ -213,29 +201,29 @@ export async function createShiftChangeRequest(data: unknown) {
           gte: shiftToGetChanged.startTime,
         },
       },
-    })
+    });
 
     if (collegueIsNotAvailable) {
       return {
-        message: 'Colleague is not available',
-      }
+        message: "Colleague is not available",
+      };
     }
 
     const checkIfAlreadyRequested = await prisma.shiftRequest.findFirst({
       where: {
         shiftId,
       },
-    })
+    });
 
     if (checkIfAlreadyRequested) {
       return {
-        message: 'Request Already Sent',
-      }
+        message: "Request Already Sent",
+      };
     }
   } catch {
     return {
-      message: 'Something went wrong please try again',
-    }
+      message: "Something went wrong please try again",
+    };
   }
 
   try {
@@ -255,10 +243,10 @@ export async function createShiftChangeRequest(data: unknown) {
           },
         },
       },
-    })
+    });
   } catch {
     return {
-      message: 'Something went wrong please try again',
-    }
+      message: "Something went wrong please try again",
+    };
   }
 }

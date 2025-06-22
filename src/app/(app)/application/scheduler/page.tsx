@@ -1,54 +1,48 @@
-import { getSchedulesForWeek } from '@/actions/schedule-actions'
-import Schedule from '@/components/schedule'
-import { Button } from '@/components/ui/button'
-import { CardHeader, CardTitle } from '@/components/ui/card'
-import { checkIfAdmin } from '@/lib/server-utils'
-import { getISOWeek, getISOWeeksInYear, getISOWeekYear } from 'date-fns'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
-import Link from 'next/link'
-import { redirect } from 'next/navigation'
+import Schedule from "@/components/schedule";
+import { Button } from "@/components/ui/button";
+import { CardHeader, CardTitle } from "@/components/ui/card";
+import { checkIfAdmin } from "@/lib/server-utils";
+import { getISOWeek, getISOWeeksInYear, getISOWeekYear } from "date-fns";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import Link from "next/link";
+import { redirect } from "next/navigation";
 
 type PageProps = {
-  searchParams: Promise<{ week: number; year: number }>
-}
+  searchParams: Promise<{ week: number; year: number }>;
+};
 export default async function Page({ searchParams }: PageProps) {
-  await checkIfAdmin()
+  await checkIfAdmin();
 
-  let { week, year } = await searchParams
+  let { week, year } = await searchParams;
 
   if (!week || !year) {
-    const now = new Date()
-    const week = getISOWeek(now)
-    const year = getISOWeekYear(now)
-    redirect(`/application/scheduler?week=${week}&year=${year}`)
+    const now = new Date();
+    const week = getISOWeek(now);
+    const year = getISOWeekYear(now);
+    redirect(`/application/scheduler?week=${week}&year=${year}`);
   }
 
-  week = Number(week)
-  year = Number(year)
+  week = Number(week);
+  year = Number(year);
 
-  const schedules = await getSchedulesForWeek({
-    week,
-    year,
-  })
+  const currentDate = new Date();
+  const currentWeek = getISOWeek(currentDate);
+  const currentYear = getISOWeekYear(currentDate);
 
-  const currentDate = new Date()
-  const currentWeek = getISOWeek(currentDate)
-  const currentYear = getISOWeekYear(currentDate)
+  const weeksInYear = getISOWeeksInYear(new Date(year, 0, 1));
 
-  const weeksInYear = getISOWeeksInYear(new Date(year, 0, 1))
-
-  let prevWeek = week - 1
-  let prevYear = year
+  let prevWeek = week - 1;
+  let prevYear = year;
   if (prevWeek < 1) {
-    prevYear -= 1
-    prevWeek = getISOWeeksInYear(new Date(prevYear, 0, 1))
+    prevYear -= 1;
+    prevWeek = getISOWeeksInYear(new Date(prevYear, 0, 1));
   }
 
-  let nextWeek = week + 1
-  let nextYear = year
+  let nextWeek = week + 1;
+  let nextYear = year;
   if (nextWeek > weeksInYear) {
-    nextYear += 1
-    nextWeek = 1
+    nextYear += 1;
+    nextWeek = 1;
   }
 
   return (
@@ -88,11 +82,7 @@ export default async function Page({ searchParams }: PageProps) {
           </div>
         </div>
       </CardHeader>
-      {schedules.data ? (
-        <Schedule schedules={schedules.data} week={week} year={year} />
-      ) : (
-        <p>Could not load schedules</p>
-      )}
+      <Schedule week={week} year={year} />
     </main>
-  )
+  );
 }

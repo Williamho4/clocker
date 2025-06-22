@@ -13,9 +13,8 @@ export default function UserImage({
   className,
 }: UserImageProps) {
   return (
-    <Avatar>
+    <Avatar className={cn("h-8 w-8", className)}>
       <AvatarImage
-        className={cn("h-8 w-8", className)}
         src={`https://ui-avatars.com/api/?name=${firstName}+${lastName}&background=random&rounded=true&font-size=0.33`}
       />
       <AvatarFallback>USER</AvatarFallback>
