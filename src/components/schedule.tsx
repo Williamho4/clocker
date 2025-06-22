@@ -76,11 +76,14 @@ export default async function Schedule({ week, year }: ScheduleMakerProps) {
                   <CardContent className="flex flex-col">
                     {scheduleForDay &&
                       scheduleForDay.shifts
-                        .filter(
-                          (shift) =>
-                            toZonedTime(shift.startTime, DISPLAY_TIMEZONE) !==
-                            null
-                        )
+                        .filter((shift) => {
+                          const shiftDay = format(
+                            toZonedTime(shift.startTime, DISPLAY_TIMEZONE),
+                            'yyyy-MM-dd'
+                          )
+                          const currentDay = format(day.date, 'yyyy-MM-dd')
+                          return shiftDay === currentDay
+                        })
                         .map((shift) => (
                           <Shift key={shift.id} shiftData={shift} />
                         ))}
