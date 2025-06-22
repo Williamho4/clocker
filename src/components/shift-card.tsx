@@ -5,25 +5,25 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { getDateDiffrenceInHours } from "@/lib/utils";
-import { Shift } from "@prisma/client";
-import { format, isSameDay, startOfDay } from "date-fns";
-import { Calendar, Clock, User } from "lucide-react";
-import { Badge } from "./ui/badge";
-import { RequestShiftChangeBtn } from "./request-shift-change-btn";
-import { MemberWithUser } from "@/lib/prisma/member/select";
+} from '@/components/ui/card'
+import { formatToTimeZoneAndFormat, getDateDiffrenceInHours } from '@/lib/utils'
+import { Shift } from '@prisma/client'
+import { isSameDay, startOfDay } from 'date-fns'
+import { Calendar, Clock, User } from 'lucide-react'
+import { Badge } from './ui/badge'
+import { RequestShiftChangeBtn } from './request-shift-change-btn'
+import { MemberWithUser } from '@/lib/prisma/member/select'
 
 type ShiftCardProps = {
-  shiftData: Shift;
-  colleagues: MemberWithUser[];
-};
+  shiftData: Shift
+  colleagues: MemberWithUser[]
+}
 
 export default function ShiftCard({ shiftData, colleagues }: ShiftCardProps) {
   const totalHours = getDateDiffrenceInHours(
     shiftData.startTime,
     shiftData.endTime
-  );
+  )
 
   return (
     <Card>
@@ -56,15 +56,15 @@ export default function ShiftCard({ shiftData, colleagues }: ShiftCardProps) {
       <CardContent className="space-y-2">
         <div className="flex gap-2 items-center">
           <Calendar size={20} />
-          <p>{format(shiftData.startTime, "PPPP")}</p>
+          <p>{formatToTimeZoneAndFormat(shiftData.startTime, 'PPPP')}</p>
         </div>
         <div className="flex gap-2 items-center">
           <Clock size={20} />
           <p>
-            {`${format(shiftData.startTime, "HH:mm")} - ${format(
-              shiftData.endTime,
-              "HH:mm"
-            )}
+            {`${formatToTimeZoneAndFormat(
+              shiftData.startTime,
+              'HH:mm'
+            )} - ${formatToTimeZoneAndFormat(shiftData.endTime, 'HH:mm')}
             `}
           </p>
         </div>
@@ -80,5 +80,5 @@ export default function ShiftCard({ shiftData, colleagues }: ShiftCardProps) {
         />
       </CardFooter>
     </Card>
-  );
+  )
 }

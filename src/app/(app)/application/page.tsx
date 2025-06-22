@@ -1,48 +1,41 @@
-import { Badge } from "@/components/ui/badge";
+import { Badge } from '@/components/ui/badge'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Calendar, Clock, Mail, Phone, User } from "lucide-react";
-import UserImage from "../../../components/user-image";
-import { getUpcomingShiftsForTimeSpan } from "@/actions/shifts";
-import { Shift as TShift } from "@prisma/client";
-import {
-  addDays,
-  endOfWeek,
-  format,
-  getHours,
-  startOfDay,
-  startOfWeek,
-} from "date-fns";
-import { auth } from "@/lib/auth";
-import { redirect } from "next/navigation";
-import { headers } from "next/headers";
-import { getTotalHoursWorkedInTimeSpan } from "@/actions/user-actions";
-import { getDateDiffrenceInHours } from "@/lib/utils";
+} from '@/components/ui/card'
+import { Calendar, Clock, Mail, Phone, User } from 'lucide-react'
+import UserImage from '../../../components/user-image'
+import { getUpcomingShiftsForTimeSpan } from '@/actions/shifts'
+import { Shift as TShift } from '@prisma/client'
+import { addDays, endOfWeek, getHours, startOfDay, startOfWeek } from 'date-fns'
+import { auth } from '@/lib/auth'
+import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
+import { getTotalHoursWorkedInTimeSpan } from '@/actions/user-actions'
+import { formatToTimeZoneAndFormat, getDateDiffrenceInHours } from '@/lib/utils'
 
 export default async function Page() {
   const activeMember = await auth.api.getActiveMember({
     headers: await headers(),
-  });
+  })
 
   if (!activeMember) {
-    redirect("/application/start");
+    redirect('/application/start')
   }
 
   //Get shifts for 7 next days
   const { data: shifts } = await getUpcomingShiftsForTimeSpan({
     startDate: startOfDay(new Date()),
     endDate: addDays(new Date(), 7),
-  });
+  })
 
   const totalHoursWorkedThisWeek = await getTotalHoursWorkedInTimeSpan({
     startDate: startOfWeek(new Date(), { weekStartsOn: 1 }),
     endDate: endOfWeek(new Date(), { weekStartsOn: 1 }),
-  });
+  })
 
   return (
     <main className="w-full h-full overflow-y-auto">
@@ -127,22 +120,22 @@ export default async function Page() {
         </section>
       </div>
     </main>
-  );
+  )
 }
 
 const Shift = ({ shift }: { shift: TShift }) => {
   function getTimeOfDay(
     date: Date
-  ): "morning" | "afternoon" | "evening" | "night" {
-    const hour = getHours(date);
+  ): 'morning' | 'afternoon' | 'evening' | 'night' {
+    const hour = getHours(date)
 
-    if (hour >= 5 && hour < 12) return "morning";
-    if (hour >= 12 && hour < 17) return "afternoon";
-    if (hour >= 17 && hour < 21) return "evening";
-    return "night";
+    if (hour >= 5 && hour < 12) return 'morning'
+    if (hour >= 12 && hour < 17) return 'afternoon'
+    if (hour >= 17 && hour < 21) return 'evening'
+    return 'night'
   }
 
-  const totalHours = getDateDiffrenceInHours(shift.startTime, shift.endTime);
+  const totalHours = getDateDiffrenceInHours(shift.startTime, shift.endTime)
 
   return (
     <Card className="rounded-sm">
@@ -150,9 +143,12 @@ const Shift = ({ shift }: { shift: TShift }) => {
         <div className="flex items-center gap-5">
           <div className="flex flex-col items-center">
             <p className="text-muted-foreground">
-              {format(shift.startTime, "iii")}
+              {formatToTimeZoneAndFormat(shift.startTime, 'iii')}
             </p>
-            <p className="font-bold text-xl"> {format(shift.startTime, "d")}</p>
+            <p className="font-bold text-xl">
+              {' '}
+              {formatToTimeZoneAndFormat(shift.startTime, 'd')}
+            </p>
           </div>
           <div>
             <p className="capitalize">{getTimeOfDay(shift.startTime)} shift</p>
@@ -160,8 +156,8 @@ const Shift = ({ shift }: { shift: TShift }) => {
             <div className="flex gap-2">
               <Clock />
               <p className="text-muted-foreground">
-                {format(shift.startTime, "HH:mm")} -
-                {format(shift.endTime, "HH:mm")}
+                {formatToTimeZoneAndFormat(shift.startTime, 'HH:mm')} -
+                {formatToTimeZoneAndFormat(shift.endTime, 'HH:mm')}
               </p>
             </div>
           </div>
@@ -174,5 +170,5 @@ const Shift = ({ shift }: { shift: TShift }) => {
         </Badge>
       </CardContent>
     </Card>
-  );
-};
+  )
+}

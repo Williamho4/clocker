@@ -10,13 +10,11 @@ import {
 import { twMerge } from 'tailwind-merge'
 import { ScheduleWithShifts } from './prisma/schedule/select'
 import { authClient } from './auth-client'
+import { toZonedTime } from 'date-fns-tz'
+import { DISPLAY_TIMEZONE } from './constants'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
-}
-
-export function dateFormatter(date: Date) {
-  return format(date, 'MMMM d')
 }
 
 export function combineDateAndTime(date: Date, time: string): Date {
@@ -98,4 +96,10 @@ export const alreadyMember = async (email: string) => {
   if (exists) {
     return true
   }
+}
+
+export const formatToTimeZoneAndFormat = (date: Date, formatType: string) => {
+  const timeZoneFormattedDate = toZonedTime(date, DISPLAY_TIMEZONE)
+
+  return format(timeZoneFormattedDate, formatType)
 }

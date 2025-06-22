@@ -1,7 +1,7 @@
 import { checkInEmployee } from '@/actions/check-in-actions'
 import { Button } from './ui/button'
 import { toast } from 'sonner'
-import { format } from 'date-fns'
+import { formatToTimeZoneAndFormat } from '@/lib/utils'
 
 type CheckInBtnProps = {
   memberId: string
@@ -10,7 +10,7 @@ type CheckInBtnProps = {
 
 export default function CheckInBtn({ memberId, resetSearch }: CheckInBtnProps) {
   const handleCheckIn = async ({}) => {
-    const checkInTime = format(new Date(), 'HH:mm')
+    const checkInTime = formatToTimeZoneAndFormat(new Date(), 'HH:mm')
     const error = await checkInEmployee({ memberId })
 
     if (error) {

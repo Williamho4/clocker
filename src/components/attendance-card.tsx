@@ -1,5 +1,5 @@
 import { Attendance, Break, Member, Shift, User } from '@prisma/client'
-import { differenceInMinutes, format } from 'date-fns'
+import { differenceInMinutes } from 'date-fns'
 import CheckOutBtn from './check-out-btn'
 import StartBreakBtn from './start-break-btn'
 import StopBreakBtn from './stop-break-button'
@@ -14,6 +14,7 @@ import {
 } from './ui/card'
 import { Badge } from './ui/badge'
 import UserImage from './user-image'
+import { formatToTimeZoneAndFormat } from '@/lib/utils'
 
 type MemberAndUser = Member & {
   user: User
@@ -46,8 +47,8 @@ export default function AttendanceCard({ attendance }: CheckInCardProps) {
             <CardTitle className="capitalize">{user.name}</CardTitle>
             {attendance.shift && (
               <CardDescription>
-                {format(attendance.shift.startTime, 'HH:mm')} -{' '}
-                {format(attendance.shift.endTime, 'HH:mm')}
+                {formatToTimeZoneAndFormat(attendance.shift.startTime, 'HH:mm')}{' '}
+                - {formatToTimeZoneAndFormat(attendance.shift.endTime, 'HH:mm')}
               </CardDescription>
             )}
           </div>
@@ -68,7 +69,7 @@ export default function AttendanceCard({ attendance }: CheckInCardProps) {
         <div className="flex gap-2">
           <p>Check-In Time</p>
           <p className="font-bold">
-            {format(attendance.checkInTime!, 'HH:mm')}
+            {formatToTimeZoneAndFormat(attendance.checkInTime!, 'HH:mm')}
           </p>
         </div>
         <div className="flex gap-2">
