@@ -7,6 +7,7 @@ import {
   cn,
   countTotalHoursForDay,
   countTotalWorkersForDay,
+  formatToTimeZoneAndFormat,
   weekToDates,
 } from '@/lib/utils'
 import Shift from './shift'
@@ -76,7 +77,13 @@ export default async function Schedule({ week, year }: ScheduleMakerProps) {
                   <CardContent className="flex flex-col">
                     {scheduleForDay &&
                       scheduleForDay.shifts
-                        .filter((shift) => shift.startTime !== null)
+                        .filter(
+                          (shift) =>
+                            formatToTimeZoneAndFormat(
+                              shift.startTime,
+                              DISPLAY_TIMEZONE
+                            ) !== null
+                        )
                         .map((shift) => (
                           <Shift key={shift.id} shiftData={shift} />
                         ))}
