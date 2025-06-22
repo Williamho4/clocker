@@ -26,7 +26,7 @@ export default async function Schedule({ week, year }: ScheduleMakerProps) {
   const todaysDate = startOfDay(new Date())
 
   const weekDays = Array.from({ length: 7 }, (_, i) => {
-    const date = addDays(weekStart, i)
+    const date = startOfDay(addDays(weekStart, i))
     return {
       date, // raw Date object
       label: format(date, 'MMMM d'), // "June 12"
