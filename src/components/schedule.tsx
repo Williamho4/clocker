@@ -7,7 +7,6 @@ import {
   cn,
   countTotalHoursForDay,
   countTotalWorkersForDay,
-  formatToTimeZoneAndFormat,
   weekToDates,
 } from '@/lib/utils'
 import Shift from './shift'
@@ -79,10 +78,8 @@ export default async function Schedule({ week, year }: ScheduleMakerProps) {
                       scheduleForDay.shifts
                         .filter(
                           (shift) =>
-                            formatToTimeZoneAndFormat(
-                              shift.startTime,
-                              DISPLAY_TIMEZONE
-                            ) !== null
+                            toZonedTime(shift.startTime, DISPLAY_TIMEZONE) !==
+                            null
                         )
                         .map((shift) => (
                           <Shift key={shift.id} shiftData={shift} />
