@@ -10,7 +10,7 @@ import {
 import { twMerge } from "tailwind-merge";
 import { ScheduleWithShifts } from "./prisma/schedule/select";
 import { authClient } from "./auth-client";
-import { toZonedTime } from "date-fns-tz";
+import { fromZonedTime, toZonedTime } from "date-fns-tz";
 import { DISPLAY_TIMEZONE } from "./constants";
 
 export function cn(...inputs: ClassValue[]) {
@@ -112,5 +112,5 @@ export const checkIfSameDate = (date1: Date, date2: Date) => {
 };
 
 export const converDateToUtc = (date: Date) => {
-  return toZonedTime(date, DISPLAY_TIMEZONE);
+  return fromZonedTime(date, DISPLAY_TIMEZONE);
 };
