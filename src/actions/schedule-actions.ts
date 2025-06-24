@@ -33,7 +33,7 @@ export const createShift = async (data: unknown) => {
 
   const checkIfSchedulesAlreadyCreated = await prisma.schedule.findFirst({
     where: {
-      date: startOfDay(shiftStartDate),
+      date: converDateToUtc(startOfDay(shiftStartDate)),
       organizationId,
     },
   });
@@ -50,7 +50,7 @@ export const createShift = async (data: unknown) => {
   const schedule = await prisma.schedule.findUnique({
     where: {
       date_organizationId: {
-        date: startOfDay(shiftStartDate),
+        date: converDateToUtc(startOfDay(shiftStartDate)),
         organizationId,
       },
     },
