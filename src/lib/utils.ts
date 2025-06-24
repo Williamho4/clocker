@@ -19,14 +19,16 @@ export function cn(...inputs: ClassValue[]) {
 
 export function combineDateAndTime(date: Date, time: string): Date {
   const [hours, minutes] = time.split(":").map(Number);
-  const combined = new Date(date);
 
-  combined.setHours(hours);
-  combined.setMinutes(minutes);
-  combined.setSeconds(0);
-  combined.setMilliseconds(0);
+  const localDateTime = new Date(date); // will hold local visual date
 
-  return combined;
+  localDateTime.setHours(hours);
+  localDateTime.setMinutes(minutes);
+  localDateTime.setSeconds(0);
+  localDateTime.setMilliseconds(0);
+
+  // interpret the local time in your timezone, then convert to UTC
+  return fromZonedTime(localDateTime, DISPLAY_TIMEZONE);
 }
 
 export const countTotalHoursForDay = (schedule: ScheduleWithShifts) => {
@@ -109,8 +111,4 @@ export const checkIfSameDate = (date1: Date, date2: Date) => {
     format(toZonedTime(date1, DISPLAY_TIMEZONE), "yyyy-MM-dd") ===
     format(toZonedTime(date2, DISPLAY_TIMEZONE), "yyyy-MM-dd")
   );
-};
-
-export const converDateToUtc = (date: Date) => {
-  return fromZonedTime(date, DISPLAY_TIMEZONE);
 };
