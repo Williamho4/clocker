@@ -1,34 +1,34 @@
-'use server'
+"use server";
 
-import prisma from '@/lib/db'
-import { scheduleSelect } from '@/lib/prisma/schedule/select'
-import { getActiveMember } from '@/lib/server-utils'
-import { weekToDates } from '@/lib/utils'
+import prisma from "@/lib/db";
+import { scheduleSelect } from "@/lib/prisma/schedule/select";
+import { getActiveMember } from "@/lib/server-utils";
+import { converDateToUtc, weekToDates } from "@/lib/utils";
 import {
   createShiftSchema,
   deleteShiftSchema,
   getSchedulesForWeekSchema,
-} from '@/lib/validations/schedule'
-import { addDays, startOfDay } from 'date-fns'
-import { revalidatePath } from 'next/cache'
+} from "@/lib/validations/schedule";
+import { addDays, startOfDay } from "date-fns";
+import { revalidatePath } from "next/cache";
 
 export const createShift = async (data: unknown) => {
-  const validatedData = createShiftSchema.safeParse(data)
+  const validatedData = createShiftSchema.safeParse(data);
 
   if (!validatedData.success) {
-    return { message: 'Invalid input. Please try again.' }
+    return { message: "Invalid input. Please try again." };
   }
 
-  const { shiftStartDate, shiftEndDate, employeeId } = validatedData.data
+  const { shiftStartDate, shiftEndDate, employeeId } = validatedData.data;
 
-  const activeMember = await getActiveMember()
+  const activeMember = await getActiveMember();
 
-  const { organizationId } = activeMember
+  const { organizationId } = activeMember;
 
-  if (activeMember.role === 'member') {
+  if (activeMember.role === "member") {
     return {
-      message: 'Not authorized',
-    }
+      message: "Not authorized",
+    };
   }
 
   const checkIfSchedulesAlreadyCreated = await prisma.schedule.findFirst({
@@ -36,15 +36,15 @@ export const createShift = async (data: unknown) => {
       date: startOfDay(shiftStartDate),
       organizationId,
     },
-  })
+  });
 
   if (!checkIfSchedulesAlreadyCreated) {
     await prisma.schedule.create({
       data: {
-        date: startOfDay(shiftStartDate),
+        date: converDateToUtc(startOfDay(shiftStartDate)),
         organizationId,
       },
-    })
+    });
   }
 
   const schedule = await prisma.schedule.findUnique({
@@ -57,12 +57,12 @@ export const createShift = async (data: unknown) => {
     select: {
       id: true,
     },
-  })
+  });
 
-  if (!schedule) throw new Error('Schedule not found')
+  if (!schedule) throw new Error("Schedule not found");
 
   const fixedEndDate =
-    shiftStartDate > shiftEndDate ? addDays(shiftEndDate, 1) : shiftEndDate
+    shiftStartDate > shiftEndDate ? addDays(shiftEndDate, 1) : shiftEndDate;
 
   const employeeAlreadyHasShift = await prisma.shift.findFirst({
     where: {
@@ -77,12 +77,12 @@ export const createShift = async (data: unknown) => {
         gt: shiftStartDate,
       },
     },
-  })
+  });
 
   if (employeeAlreadyHasShift) {
     return {
-      message: 'The employee already has a shift this time',
-    }
+      message: "The employee already has a shift this time",
+    };
   }
 
   try {
@@ -97,31 +97,31 @@ export const createShift = async (data: unknown) => {
           connect: { id: schedule.id },
         },
       },
-    })
+    });
 
-    revalidatePath(`/application/scheduler`)
+    revalidatePath(`/application/scheduler`);
   } catch {
     return {
-      message: 'Something went wrong please try again',
-    }
+      message: "Something went wrong please try again",
+    };
   }
-}
+};
 
 export const deleteShift = async (data: unknown) => {
-  const validatedData = deleteShiftSchema.safeParse(data)
+  const validatedData = deleteShiftSchema.safeParse(data);
 
   if (!validatedData.success) {
-    return { message: 'Invalid input, Please try again.' }
+    return { message: "Invalid input, Please try again." };
   }
 
-  const { shiftId } = validatedData.data
+  const { shiftId } = validatedData.data;
 
-  const activeMember = await getActiveMember()
+  const activeMember = await getActiveMember();
 
-  if (!activeMember || activeMember.role === 'member') {
+  if (!activeMember || activeMember.role === "member") {
     return {
-      message: 'Not authorized',
-    }
+      message: "Not authorized",
+    };
   }
 
   try {
@@ -129,30 +129,30 @@ export const deleteShift = async (data: unknown) => {
       where: {
         id: shiftId,
       },
-    })
+    });
   } catch {
     return {
-      message: 'Could not delete shift',
-    }
+      message: "Could not delete shift",
+    };
   }
 
-  revalidatePath(`/application/scheduler`)
-}
+  revalidatePath(`/application/scheduler`);
+};
 
 export const getSchedulesForWeek = async (data: unknown) => {
-  const validatedData = getSchedulesForWeekSchema.safeParse(data)
+  const validatedData = getSchedulesForWeekSchema.safeParse(data);
 
   if (!validatedData.success) {
-    return { success: false, message: 'Invalid input, try again' }
+    return { success: false, message: "Invalid input, try again" };
   }
 
-  const { week, year } = validatedData.data
+  const { week, year } = validatedData.data;
 
-  const activeMember = await getActiveMember()
+  const activeMember = await getActiveMember();
 
-  const { organizationId } = activeMember
+  const { organizationId } = activeMember;
 
-  const dates = await weekToDates(week, year)
+  const dates = await weekToDates(week, year);
 
   const schedules = await prisma.schedule.findMany({
     where: {
@@ -163,7 +163,7 @@ export const getSchedulesForWeek = async (data: unknown) => {
       organizationId: organizationId,
     },
     include: scheduleSelect,
-  })
+  });
 
-  return { success: true, data: schedules }
-}
+  return { success: true, data: schedules };
+};

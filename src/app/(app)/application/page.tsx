@@ -1,47 +1,56 @@
-import { Badge } from '@/components/ui/badge'
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card'
-import { Calendar, Clock, Mail, Phone, User } from 'lucide-react'
-import UserImage from '../../../components/user-image'
-import { getUpcomingShiftsForTimeSpan } from '@/actions/shifts'
-import { Shift as TShift } from '@prisma/client'
-import { addDays, endOfWeek, getHours, startOfDay, startOfWeek } from 'date-fns'
-import { auth } from '@/lib/auth'
-import { redirect } from 'next/navigation'
-import { headers } from 'next/headers'
-import { getTotalHoursWorkedInTimeSpan } from '@/actions/user-actions'
-import { formatToTimeZoneAndFormat, getDateDiffrenceInHours } from '@/lib/utils'
+} from "@/components/ui/card";
+import { Calendar, Clock, Mail, Phone, User } from "lucide-react";
+import UserImage from "../../../components/user-image";
+import { getUpcomingShiftsForTimeSpan } from "@/actions/shifts";
+import { Shift as TShift } from "@prisma/client";
+import {
+  addDays,
+  endOfWeek,
+  getHours,
+  startOfDay,
+  startOfWeek,
+} from "date-fns";
+import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { headers } from "next/headers";
+import { getTotalHoursWorkedInTimeSpan } from "@/actions/user-actions";
+import {
+  formatToTimeZoneAndFormat,
+  getDateDiffrenceInHours,
+} from "@/lib/utils";
 
 export default async function Page() {
   const activeMember = await auth.api.getActiveMember({
     headers: await headers(),
-  })
+  });
 
   if (!activeMember) {
-    redirect('/application/start')
+    redirect("/application/start");
   }
 
   //Get shifts for 7 next days
   const { data: shifts } = await getUpcomingShiftsForTimeSpan({
     startDate: startOfDay(new Date()),
     endDate: addDays(new Date(), 7),
-  })
+  });
 
   const totalHoursWorkedThisWeek = await getTotalHoursWorkedInTimeSpan({
     startDate: startOfWeek(new Date(), { weekStartsOn: 1 }),
     endDate: endOfWeek(new Date(), { weekStartsOn: 1 }),
-  })
+  });
 
   return (
     <main className="w-full h-full overflow-y-auto">
-      <div className="flex p-10 space-x-9 h-full">
-        <section className="w-[65%] h-full grid grid-rows-[1fr_4fr] gap-5">
-          <div className="grid grid-cols-3 gap-3">
+      <div className="flex flex-col lg:flex-row p-4 md:p-10 space-x-9 h-full">
+        <section className="w-full lg:w-[65%] h-220 lg:h-full mb-6 lg:mb-0 grid grid-rows-[1fr_4fr] gap-5">
+          <div className="grid lg:grid-cols-3 gap-3">
             <Card className="rounded-md">
               <CardContent className="flex items-center gap-4 ">
                 <Calendar size={30} color="blue" />
@@ -72,8 +81,8 @@ export default async function Page() {
               </CardContent>
             </Card>
           </div>
-          <Card className="px-6 grid grid-rows-[auto_1fr] rounded-md h-full min-h-0">
-            <CardHeader className="pl-1">
+          <Card className="md:px-6 grid grid-rows-[auto_1fr] rounded-md h-full min-h-0">
+            <CardHeader className="">
               <CardTitle>Upcoming Shifts</CardTitle>
               <CardDescription>
                 Your scheduled shifts for the next 7 days
@@ -88,7 +97,7 @@ export default async function Page() {
             </CardContent>
           </Card>
         </section>
-        <section className="w-[35%] grid grid-rows-[10fr_4fr] gap-5 h-full">
+        <section className="w-full lg:w-[35%] grid grid-rows-[10fr_4fr] gap-5 h-full">
           <Card className="rounded-md">
             <CardHeader>
               <CardTitle className="flex items-center gap-3">
@@ -120,22 +129,22 @@ export default async function Page() {
         </section>
       </div>
     </main>
-  )
+  );
 }
 
 const Shift = ({ shift }: { shift: TShift }) => {
   function getTimeOfDay(
     date: Date
-  ): 'morning' | 'afternoon' | 'evening' | 'night' {
-    const hour = getHours(date)
+  ): "morning" | "afternoon" | "evening" | "night" {
+    const hour = getHours(date);
 
-    if (hour >= 5 && hour < 12) return 'morning'
-    if (hour >= 12 && hour < 17) return 'afternoon'
-    if (hour >= 17 && hour < 21) return 'evening'
-    return 'night'
+    if (hour >= 5 && hour < 12) return "morning";
+    if (hour >= 12 && hour < 17) return "afternoon";
+    if (hour >= 17 && hour < 21) return "evening";
+    return "night";
   }
 
-  const totalHours = getDateDiffrenceInHours(shift.startTime, shift.endTime)
+  const totalHours = getDateDiffrenceInHours(shift.startTime, shift.endTime);
 
   return (
     <Card className="rounded-sm">
@@ -143,11 +152,11 @@ const Shift = ({ shift }: { shift: TShift }) => {
         <div className="flex items-center gap-5">
           <div className="flex flex-col items-center">
             <p className="text-muted-foreground">
-              {formatToTimeZoneAndFormat(shift.startTime, 'iii')}
+              {formatToTimeZoneAndFormat(shift.startTime, "iii")}
             </p>
             <p className="font-bold text-xl">
-              {' '}
-              {formatToTimeZoneAndFormat(shift.startTime, 'd')}
+              {" "}
+              {formatToTimeZoneAndFormat(shift.startTime, "d")}
             </p>
           </div>
           <div>
@@ -156,8 +165,8 @@ const Shift = ({ shift }: { shift: TShift }) => {
             <div className="flex gap-2">
               <Clock />
               <p className="text-muted-foreground">
-                {formatToTimeZoneAndFormat(shift.startTime, 'HH:mm')} -
-                {formatToTimeZoneAndFormat(shift.endTime, 'HH:mm')}
+                {formatToTimeZoneAndFormat(shift.startTime, "HH:mm")} -
+                {formatToTimeZoneAndFormat(shift.endTime, "HH:mm")}
               </p>
             </div>
           </div>
@@ -170,5 +179,5 @@ const Shift = ({ shift }: { shift: TShift }) => {
         </Badge>
       </CardContent>
     </Card>
-  )
-}
+  );
+};
