@@ -3,7 +3,7 @@
 import prisma from "@/lib/db";
 import { scheduleSelect } from "@/lib/prisma/schedule/select";
 import { getActiveMember } from "@/lib/server-utils";
-import { converDateToUtc, weekToDates } from "@/lib/utils";
+import { weekToDates } from "@/lib/utils";
 import {
   createShiftSchema,
   deleteShiftSchema,
