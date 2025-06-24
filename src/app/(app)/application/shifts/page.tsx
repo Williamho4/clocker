@@ -26,6 +26,8 @@ export default async function Page() {
     startDate: startOfMonth(new Date()),
     endDate: endOfMonth(new Date()),
   });
+
+  console.log(startOfMonth(new Date()));
   const { data: colleagues } = await getAllColleagues();
 
   return (

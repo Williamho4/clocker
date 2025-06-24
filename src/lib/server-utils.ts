@@ -1,10 +1,10 @@
-'use server'
+"use server";
 
-import { headers } from 'next/headers'
-import { auth } from './auth'
-import prisma from './db'
-import { addHours, subHours } from 'date-fns'
-import { redirect } from 'next/navigation'
+import { headers } from "next/headers";
+import { auth } from "./auth";
+import prisma from "./db";
+import { addHours, subHours } from "date-fns";
+import { redirect } from "next/navigation";
 
 export async function checkIfCheckedInAlready(orgId: string, memberId: string) {
   const checkIfCheckedInAlready = await prisma.attendance.findFirst({
@@ -12,14 +12,14 @@ export async function checkIfCheckedInAlready(orgId: string, memberId: string) {
       member: {
         id: memberId,
       },
-      status: 'CHECKED_IN',
+      status: "CHECKED_IN",
       organization: {
         id: orgId,
       },
     },
-  })
+  });
 
-  return checkIfCheckedInAlready
+  return checkIfCheckedInAlready;
 }
 
 export async function checkIfShiftExistForAttendance(memberId: string) {
@@ -27,10 +27,10 @@ export async function checkIfShiftExistForAttendance(memberId: string) {
     const member = await prisma.member.findUnique({
       where: { id: memberId },
       select: { id: true },
-    })
+    });
 
     if (!member) {
-      throw new Error('Member not found')
+      throw new Error("Member not found");
     }
 
     const shift = await prisma.shift.findFirst({
@@ -41,10 +41,10 @@ export async function checkIfShiftExistForAttendance(memberId: string) {
         },
         memberId: member.id,
       },
-    })
-    return shift
+    });
+    return shift;
   } catch {
-    return null
+    return null;
   }
 }
 
@@ -52,11 +52,11 @@ export async function checkIfOnBreak(attendanceId: string) {
   const alreadyOnBreak = await prisma.break.findFirst({
     where: {
       attendanceId,
-      status: 'PENDING',
+      status: "PENDING",
     },
-  })
+  });
 
-  return alreadyOnBreak
+  return alreadyOnBreak;
 }
 
 export async function createBreak(attendanceId: string) {
@@ -67,13 +67,13 @@ export async function createBreak(attendanceId: string) {
         attendance: {
           connect: { id: attendanceId },
         },
-        status: 'PENDING',
+        status: "PENDING",
       },
-    })
+    });
 
-    return pause
+    return pause;
   } catch {
-    return null
+    return null;
   }
 }
 
@@ -85,38 +85,38 @@ export async function editBreakToDone(breakId: string) {
       },
       data: {
         endTime: new Date(),
-        status: 'DONE',
+        status: "DONE",
       },
-    })
+    });
 
-    return pause
+    return pause;
   } catch {
-    return null
+    return null;
   }
 }
 
 export const checkIfAdmin = async () => {
   const activeMember = await auth.api.getActiveMember({
     headers: await headers(),
-  })
+  });
 
   if (!activeMember) {
-    redirect('/application/start')
+    redirect("/application/start");
   }
 
-  if (activeMember.role === 'member') {
-    redirect('/application')
+  if (activeMember.role === "member") {
+    redirect("/application");
   }
-}
+};
 
 export const getActiveMember = async () => {
   const activeMember = await auth.api.getActiveMember({
     headers: await headers(),
-  })
+  });
 
   if (!activeMember || !activeMember.organizationId) {
-    redirect('/application/start')
+    redirect("/application/start");
   }
 
-  return activeMember
-}
+  return activeMember;
+};
