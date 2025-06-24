@@ -1,5 +1,6 @@
 "use server";
 
+import { DISPLAY_TIMEZONE } from "@/lib/constants";
 import prisma from "@/lib/db";
 import { scheduleSelect } from "@/lib/prisma/schedule/select";
 import { getActiveMember } from "@/lib/server-utils";
@@ -10,6 +11,7 @@ import {
   getSchedulesForWeekSchema,
 } from "@/lib/validations/schedule";
 import { addDays, startOfDay } from "date-fns";
+import { fromZonedTime, toZonedTime } from "date-fns-tz";
 import { revalidatePath } from "next/cache";
 
 export const createShift = async (data: unknown) => {
@@ -31,9 +33,15 @@ export const createShift = async (data: unknown) => {
     };
   }
 
+  const shiftLocalStart = toZonedTime(shiftStartDate, DISPLAY_TIMEZONE);
+
+  const localMidnight = startOfDay(shiftLocalStart);
+
+  const shiftScheduleDate = fromZonedTime(localMidnight, DISPLAY_TIMEZONE);
+
   const checkIfSchedulesAlreadyCreated = await prisma.schedule.findFirst({
     where: {
-      date: startOfDay(shiftStartDate),
+      date: shiftScheduleDate,
       organizationId,
     },
   });
@@ -41,7 +49,7 @@ export const createShift = async (data: unknown) => {
   if (!checkIfSchedulesAlreadyCreated) {
     await prisma.schedule.create({
       data: {
-        date: startOfDay(shiftStartDate),
+        date: shiftScheduleDate,
         organizationId,
       },
     });
@@ -50,7 +58,7 @@ export const createShift = async (data: unknown) => {
   const schedule = await prisma.schedule.findUnique({
     where: {
       date_organizationId: {
-        date: startOfDay(shiftStartDate),
+        date: shiftScheduleDate,
         organizationId,
       },
     },

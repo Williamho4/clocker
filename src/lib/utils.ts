@@ -76,7 +76,10 @@ export const weekToDates = async (week: number, year: number) => {
   const startDate = startOfISOWeek(dateInWeek);
   const endDate = endOfISOWeek(dateInWeek);
 
-  return [startDate, endDate];
+  return [
+    fromZonedTime(startDate, DISPLAY_TIMEZONE),
+    fromZonedTime(endDate, DISPLAY_TIMEZONE),
+  ];
 };
 
 export const getDateDiffrenceInHours = (startDate: Date, endDate: Date) => {

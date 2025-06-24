@@ -1,7 +1,7 @@
 import { User } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import AddShiftBtn from "./add-shift-btn";
-import { addDays, format, startOfDay, startOfWeek } from "date-fns";
+import { addDays, format, isEqual, startOfDay, startOfWeek } from "date-fns";
 import { Weekday } from "@/lib/types";
 import {
   checkIfSameDate,
@@ -13,7 +13,7 @@ import {
 import Shift from "./shift";
 import { ScheduleWithShifts } from "@/lib/prisma/schedule/select";
 import { getSchedulesForWeek } from "@/actions/schedule-actions";
-import { toZonedTime } from "date-fns-tz";
+import { fromZonedTime, toZonedTime } from "date-fns-tz";
 import { DISPLAY_TIMEZONE } from "@/lib/constants";
 
 type ScheduleMakerProps = {
@@ -23,16 +23,22 @@ type ScheduleMakerProps = {
 
 export default async function Schedule({ week, year }: ScheduleMakerProps) {
   const selectedDate = await weekToDates(week, year);
-  const weekStart = startOfWeek(selectedDate[0], { weekStartsOn: 1 });
-  const todaysDate = startOfDay(new Date());
+
+  const localSelectedDate = toZonedTime(selectedDate[0], DISPLAY_TIMEZONE);
+
+  const localWeekStart = startOfWeek(localSelectedDate, { weekStartsOn: 1 });
+
+  const weekStartUtc = fromZonedTime(localWeekStart, DISPLAY_TIMEZONE);
 
   const weekDays = Array.from({ length: 7 }, (_, i) => {
-    const date = addDays(weekStart, i);
+    const utcDate = addDays(weekStartUtc, i);
+    const localDate = toZonedTime(utcDate, DISPLAY_TIMEZONE);
+
     return {
-      date: toZonedTime(startOfDay(date), DISPLAY_TIMEZONE),
-      label: format(date, "MMMM d"),
-      dayName: format(date, "EEEE"),
-      iso: format(date, "yyyy-MM-dd"),
+      date: utcDate,
+      label: format(localDate, "MMMM d"),
+      dayName: format(localDate, "EEEE"),
+      iso: format(localDate, "yyyy-MM-dd"),
     };
   });
 
@@ -56,8 +62,10 @@ export default async function Schedule({ week, year }: ScheduleMakerProps) {
                 <Card
                   key={day.iso}
                   className={cn("min-h-50 lg:min-h-140 shadow-sm", {
-                    "ring-2 ring-blue-400":
-                      todaysDate.getTime() === day.date.getTime(),
+                    "ring-2 ring-blue-400": isEqual(
+                      startOfDay(toZonedTime(day.date, DISPLAY_TIMEZONE)),
+                      startOfDay(new Date())
+                    ),
                   })}
                 >
                   <CardHeader>
@@ -65,7 +73,6 @@ export default async function Schedule({ week, year }: ScheduleMakerProps) {
                       <ShiftStats
                         schedulesForDay={scheduleForDay ? scheduleForDay : null}
                         day={day}
-                        todaysDate={todaysDate}
                       />
                     </CardTitle>
                     <AddShiftBtn selectedDay={day.date} />
@@ -74,12 +81,15 @@ export default async function Schedule({ week, year }: ScheduleMakerProps) {
                     {scheduleForDay &&
                       scheduleForDay.shifts
                         .filter((shift) => {
-                          const shiftDay = format(
-                            toZonedTime(shift.startTime, DISPLAY_TIMEZONE),
-                            "yyyy-MM-dd"
+                          const shiftLocalDate = startOfDay(
+                            toZonedTime(shift.startTime, DISPLAY_TIMEZONE)
                           );
-                          const currentDay = format(day.date, "yyyy-MM-dd");
-                          return shiftDay === currentDay;
+
+                          const scheduleLocalDate = startOfDay(
+                            toZonedTime(day.date, DISPLAY_TIMEZONE)
+                          );
+
+                          return isEqual(shiftLocalDate, scheduleLocalDate);
                         })
                         .map((shift) => (
                           <Shift key={shift.id} shiftData={shift} />
@@ -99,11 +109,10 @@ export default async function Schedule({ week, year }: ScheduleMakerProps) {
 
 type ShiftStatsProps = {
   day: Weekday;
-  todaysDate: Date;
   schedulesForDay: ScheduleWithShifts | null;
 };
 
-const ShiftStats = ({ schedulesForDay, day, todaysDate }: ShiftStatsProps) => {
+const ShiftStats = ({ schedulesForDay, day }: ShiftStatsProps) => {
   let hours = 0;
   let employess = 0;
 
@@ -115,13 +124,7 @@ const ShiftStats = ({ schedulesForDay, day, todaysDate }: ShiftStatsProps) => {
   return (
     <div className="space-y-1">
       <div className="flex justify-between">
-        <p
-          className={cn("", {
-            "text-blue-500": todaysDate.getTime() === day.date.getTime(),
-          })}
-        >
-          {day.dayName}
-        </p>
+        <p>{day.dayName}</p>
         <div className="flex items-center gap-1">
           <User size={14}></User>
           <p>{employess}</p>
