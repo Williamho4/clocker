@@ -10,7 +10,11 @@ type ShiftProps = {
 export default function Shift({ shiftData }: ShiftProps) {
   return (
     <div className="flex items-center gap-3 relative group">
-      <UserImage firstName="William" lastName="Ho" className="h-5 w-5" />
+      <UserImage
+        firstName={shiftData.member.user.firstName}
+        lastName={shiftData.member.user.lastName}
+        className="h-5 w-5"
+      />
       <div className="bg-white border-l-2 border-gray-100 pl-2 py-1.5 pr-1 group relative hover:bg-gray-200 transition-colors w-full">
         <div className="text-sm font-medium text-gray-800 truncate max-w-[80px] capitalize">
           {shiftData.member.user.firstName} {''}

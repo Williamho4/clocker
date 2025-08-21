@@ -1,26 +1,13 @@
 import CheckInSearch from '@/components/check-in-search'
 import { getAllActiveAttendances } from '@/actions/check-in-actions'
 import AttendanceCard from '@/components/attendance-card'
-import { redirect } from 'next/navigation'
-import { auth } from '@/lib/auth'
-import { headers } from 'next/headers'
+
 import { checkIfAdmin } from '@/lib/server-utils'
 
 export default async function Page() {
   await checkIfAdmin()
 
   const { data: attendances } = await getAllActiveAttendances()
-  const activeMember = await auth.api.getActiveMember({
-    headers: await headers(),
-  })
-
-  if (!activeMember) {
-    redirect('/application/start')
-  }
-
-  if (activeMember.role !== 'owner' && activeMember.role !== 'admin') {
-    redirect('/application')
-  }
 
   return (
     <main
