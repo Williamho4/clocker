@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/popover'
 import { redirect } from 'next/navigation'
 import { completedShifts } from '@/lib/prisma/shifts/select'
-import { formatToTimeZoneAndFormat } from '@/lib/utils'
+import AttendanceEditCard from './attendance-edit-card'
 
 type AttendanceChangerProps = {
   date: Date | undefined
@@ -34,60 +34,12 @@ export default function AttendanceChanger({
       </CardHeader>
       <CardContent className="grid lg:grid-cols-2 gap-4 overflow-y-auto scrollbar-clean">
         {shifts.length > 0 ? (
-          shifts.map((shift) => <AttendanceCard shift={shift} />)
+          shifts.map((shift) => (
+            <AttendanceEditCard key={shift.id} shift={shift} />
+          ))
         ) : (
           <p>No Shifts Recorded</p>
         )}
-      </CardContent>
-    </Card>
-  )
-}
-
-type AttendanceInfo = {
-  shift: completedShifts
-}
-
-function AttendanceCard({ shift }: AttendanceInfo) {
-  const { member, checkInTime, checkOutTime } = shift
-
-  return (
-    <Card>
-      <CardContent className="space-y-3">
-        <div>
-          <p className="font-bold capitalize">
-            {member.user.firstName} {member.user.lastName}
-          </p>
-          <div
-            className="flex justify-between 
-            mt-2
-            lg:flex-col lg:space-y-2 
-          xl:space-y-0 
-          xl:flex-row"
-          >
-            <div className="flex items-center gap-1">
-              <Clock size={20} />
-              Check In:{' '}
-              <span className="font-bold">
-                {checkInTime
-                  ? formatToTimeZoneAndFormat(checkInTime, 'HH:mm')
-                  : 'Not checked in'}
-              </span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Clock size={20} />
-              Check Out:{' '}
-              <span className="font-bold">
-                {checkOutTime
-                  ? formatToTimeZoneAndFormat(checkOutTime, 'HH:mm')
-                  : 'Not checked out'}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <Button variant="edit" className="w-full">
-          Edit
-        </Button>
       </CardContent>
     </Card>
   )
